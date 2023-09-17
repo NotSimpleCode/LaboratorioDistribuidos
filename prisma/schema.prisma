@@ -1,14 +1,47 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
-model language {
-  id          Int    @id @default(autoincrement()) @db.UnsignedTinyInt
-  name        String @db.VarChar(30)
-  programmers Int    @db.UnsignedTinyInt
+model Type_document {
+  id Int @id
+  type_document String
+  user Users []
+}
+model Users {
+  document Int @id
+  name String
+  last_name String
+  types_document Type_document @relation(fields: [type_document],references: [id])
+  type_document Int
+  number_phone Int
+  registration_date DateTime
+  state String
+  address String
+  birth_date DateTime
+  roles Users_Roles[]
+}
+
+model Users_Roles {
+  id Int @id
+  user Users @relation(fields: [user_id], references: [document])
+  user_id Int
+  role Roles @relation(fields: [role_id], references: [id])
+  role_id Int
+}
+
+model Roles {
+  id Int @id
+  name String
+  created_date DateTime
+  state String
+  description String
+  users Users_Roles[]
 }

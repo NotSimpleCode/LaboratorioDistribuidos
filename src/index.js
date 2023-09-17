@@ -1,8 +1,17 @@
-import app from "./app"
-// Ejecución de servidor
-const main = () => {
-    app.listen(app.get("port"))
-    console.log(`Server on port ${app.get("port")}`)
-};
+import express from "express";
+import userRoutes from "./routes/users_routers.js";
+import rolesRoutes from "./routes/roles_routers_routes.js";
+import typeDocumentsRoutes from "./routes/type_document_routes.js";
+import userRolesRoutes from "./routes/roles_users_routes.js";
 
-main()
+const app = express();
+
+app.use(express.json());
+
+app.use('/api', userRoutes);
+app.use('/api', rolesRoutes);
+app.use('/api', typeDocumentsRoutes);
+app.use('/api', userRolesRoutes);
+
+app.listen(3000)
+console.log('Server on port',3000)
