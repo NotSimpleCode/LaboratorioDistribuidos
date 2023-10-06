@@ -1,0 +1,19 @@
+@import './base.css';
+
+:root {
+    --primary-color: #f6f7f9;
+    --darker-primary: #4A4E69;
+    --secondary-color: #22223B;
+    --third-color: #007bff;
+    --background-color: #e3e3e3;
+    --white-color: #fff;
+    --black-color: #000;
+    --font: Verdana, sans-serif
+}
+
+body {
+    background-color: var(--background-color);
+    max-width: 100vw;
+    min-height: 100vh;
+
+}
