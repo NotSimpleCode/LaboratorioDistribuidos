@@ -4,12 +4,12 @@ import {orm} from "../db.js"
 const router = Router();
 
 router.get('/connection', async (req, res) => {
-    const conexion = await orm.users_Roles.findMany()
+    const conexion = await orm.usuarios_roles.findMany()
     res.json(conexion)
 });
 
 router.get('/connection/:id', async (req, res) => {
-    const conexionFound = await orm.users_Roles.findFirst({
+    const conexionFound = await orm.usuarios_roles.findFirst({
         where:{
             id: parseInt(req.params.id)
         }
@@ -31,7 +31,7 @@ router.delete('/connection/:id', async (req, res) => {
 });
 
 router.put('/connection/:id', async (req, res) => {
-    const connectionUpdate = await orm.users_Roles.update({
+    const connectionUpdate = await orm.usuarios_roles.update({
         where:{
             id: parseInt(req.params.id)
         },
@@ -43,7 +43,7 @@ router.put('/connection/:id', async (req, res) => {
 });
 
 router.post('/connection', async (req, res) => {
-    const newConnection = await orm.users_Roles.create({
+    const newConnection = await orm.usuarios_roles.create({
         data: req.body
     })
     res.json(newConnection);

@@ -5,21 +5,21 @@ const router = Router();
 
 
 router.get('/users', async (req, res) => {
-    const users = await orm.users.findMany({
+    const usuarios = await orm.usuarios.findMany({
         include: {
-            types_document: true
+            tipo_documentos: true
         }
     })
-    res.json(users)
+    res.json(usuarios)
 });
 
 router.get('/users/:document', async (req, res) => {
-    const userFound = await orm.users.findFirst({
+    const userFound = await orm.usuarios.findFirst({
         where:{
             document: parseInt(req.params.document)
         },
         include: {
-            types_document: true
+            tipo_documentos: true
         }
     })
     if(!userFound)
@@ -28,7 +28,7 @@ router.get('/users/:document', async (req, res) => {
 });
 
 router.delete('/users/:document', async (req, res) => {
-    const deleteUser = await orm.users.delete({
+    const deleteUser = await orm.usuarios.delete({
         where:{
             document: parseInt(req.params.document)
         }
@@ -39,7 +39,7 @@ router.delete('/users/:document', async (req, res) => {
 });
 
 router.put('/users/:document', async (req, res) => {
-    const userUpdate = await orm.users.update({
+    const userUpdate = await orm.usuarios.update({
         where:{
             document: parseInt(req.params.document)
         },
@@ -51,7 +51,7 @@ router.put('/users/:document', async (req, res) => {
 });
 
 router.post('/users', async (req, res) => {
-    const newUser = await orm.users.create({
+    const newUser = await orm.usuarios.create({
         data: req.body
     })
     res.json(newUser);
