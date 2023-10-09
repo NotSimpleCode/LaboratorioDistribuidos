@@ -15,7 +15,7 @@ router.get('/connection/:id', async (req, res) => {
         }
     })
     if(!conexionFound)
-        return res.status(404).json({error:"Connection not found"})
+        return res.status(400).json({error:"Connection not found"})
     res.json(conexionFound)
 });
 
@@ -26,7 +26,7 @@ router.delete('/connection/:id', async (req, res) => {
         }
     })
     if(!rolDelete)
-        return res.status(404).json({error:"Connection not found"})
+        return res.status(400).json({error:"Connection not found"})
     return res.json(rolDelete)
 });
 
@@ -38,9 +38,11 @@ router.put('/connection/:id', async (req, res) => {
         data: req.body
     })
     if(!connectionUpdate)
-        return res.status(404).json({error:"Connection not found"})
+        return res.status(400).json({error:"Connection not found"})
     return res.json(connectionUpdate)
 });
+
+
 
 router.post('/connection', async (req, res) => {
     const newConnection = await orm.users_Roles.create({

@@ -10,6 +10,8 @@ router.get('/users', async (req, res) => {
             types_document: true
         }
     })
+    if(users==null)
+        return res.status(204).json({error:"No content"})
     res.json(users)
 });
 
@@ -35,7 +37,7 @@ router.delete('/users/:document', async (req, res) => {
     })
     if(!deleteUser)
         return res.status(404).json({error:"User not found"})
-    return res.json(deleteUser)
+    return res.status(200).json({message:"deleted successfully"})
 });
 
 router.put('/users/:document', async (req, res) => {
@@ -47,14 +49,35 @@ router.put('/users/:document', async (req, res) => {
     })
     if(!userUpdate)
         return res.status(404).json({error:"User not found"})
-    return res.json(userUpdate)
+    return res.status(200).json({message:"update successfully"})
 });
 
 router.post('/users', async (req, res) => {
-    const newUser = await orm.users.create({
-        data: req.body
-    })
-    res.json(newUser);
+    try {
+        const newUser = await orm.users.create({
+            data: req.body
+        })
+    } catch (error) {
+        return res.status(400).json({error:"User already exists"})
+    }
+    
+    return res.status(201).json({message:"User created successfully"})
 });
+
+router.patch('/users/:document', async (req, res) => {
+    const { name } = req.body; 
+    const nameUser = await orm.users.update({
+        where: {
+            document: parseInt(req.params.document)
+        },
+        data: {
+            name: name 
+        }
+    })
+    if (!nameUser)
+        return res.status(404).json({ error: "User not found" })
+    return res.status(200).json({message:"Modified successfully"})
+});
+
 
 export default router;
