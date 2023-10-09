@@ -4,16 +4,16 @@ import {orm} from "../db.js"
 const router = Router();
 
 router.get('/typesDocument', async (req, res) => {
-    const type_document = await orm.type_document.findMany({
+    const tipo_documentos = await orm.tipo_documentos.findMany({
         include: {
             user: true
         }
     })
-    res.json(type_document)
+    res.json(tipo_documentos)
 });
 
 router.get('/typesDocument/:id', async (req, res) => {
-    const typeDocumentFound = await orm.type_document.findFirst({
+    const typeDocumentFound = await orm.tipo_documentos.findFirst({
         where:{
             id: parseInt(req.params.id)
         },
@@ -27,7 +27,7 @@ router.get('/typesDocument/:id', async (req, res) => {
 });
 
 router.delete('/typesDocument/:id', async (req, res) => {
-    const typeDocumentDelete = await orm.type_document.delete({
+    const typeDocumentDelete = await orm.tipo_documentos.delete({
         where:{
             id: parseInt(req.params.id)
         }
@@ -38,7 +38,7 @@ router.delete('/typesDocument/:id', async (req, res) => {
 });
 
 router.put('/typesDocument/:id', async (req, res) => {
-    const typeDocumentUpdate = await orm.type_document.update({
+    const typeDocumentUpdate = await orm.tipo_documentos.update({
         where:{
             id: parseInt(req.params.id)
         },
@@ -50,7 +50,7 @@ router.put('/typesDocument/:id', async (req, res) => {
 });
 
 router.post('/typesDocument', async (req, res) => {
-    const newTypeDocument = await orm.type_document.create({
+    const newTypeDocument = await orm.tipo_documentos.create({
         data: req.body
     })
     res.json(newTypeDocument);
