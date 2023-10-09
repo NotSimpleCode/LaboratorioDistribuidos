@@ -9,9 +9,8 @@
 
 <style scoped>
 .search-container {
-    position: relative;
-    right: 10px;
     background-color: var(--primary-color);
     display: inline-block;
+    margin: 10px;
 }
 </style>

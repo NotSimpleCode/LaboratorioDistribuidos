@@ -1,99 +1,132 @@
-<!-- <template>
-    <section id="table-container">
-
-    </section>
-</template>
-
-<script setup>
-import { ref } from 'vue';
-let rows = ref(0)
-
-</script>
-
-<style scoped>
-#table-container {
-    position: relative;
-    right: 10px;
-    background-color: var(--primary-color);
-    display: inline-block;
-}
-</style>
-*/ -->
 <template>
-    <div>
-        <table class="user-table">
-            <thead>
-                <tr>
-                    <th>Número de Documento</th>
-                    <th>Tipo de Documento</th>
-                    <th>Nombre</th>
-                    <th>Apellido</th>
-                    <th>Celular</th>
-                    <th>Fecha de Registro</th>
-                    <th>Estado</th>
-                    <th>Dirección</th>
-                    <th>Fecha de Nacimiento</th>
-                    <th>Rol</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="usuario in usuarios" :key="usuario.document">
-                    <td>{{ usuario.document }}</td>
-                    <td>{{ usuario.types_document.type_document }}</td>
-                    <td>{{ usuario.name }}</td>
-                    <td>{{ usuario.last_name }}</td>
-                    <td>{{ usuario.number_phone }}</td>
-                    <td>{{ usuario.registration_date }}</td>
-                    <td>{{ usuario.state }}</td>
-                    <td>{{ usuario.address }}</td>
-                    <td>{{ usuario.birth_date }}</td>
-                </tr>
-            </tbody>
-        </table>
+    <div class="user-table">
+        <div class="user-header row">
+            <div class="user-cell">N° Doc</div>
+            <div class="user-cell">Tipo Doc</div>
+            <div class="user-cell">Nombre</div>
+            <div class="user-cell">Apellido</div>
+            <div class="user-cell">Celular</div>
+            <div class="user-cell">Fecha de Registro</div>
+            <div class="user-cell">Estado</div>
+            <div class="user-cell">Dirección</div>
+            <div class="user-cell">Fecha de Nacimiento</div>
+            <div class="user-cell">Rol</div>
+        </div>
+        <div v-for="user in users" :key="user.documento_usuario" class="user-row row">
+            <div :class="{ 'user-cell': true, 'user-cell-empty': !user.documento_usuario }">{{ user.documento_usuario ||
+                noDataValue }}</div>
+            <div :class="{ 'user-cell': true, 'user-cell-empty': !user.tipo_documentos }">{{ user.tipo_documentos ?
+                user.tipo_documentos.tipo_documento : noDataValue }}</div>
+            <div :class="{ 'user-cell': true, 'user-cell-empty': !user.nombre_usuario }" :title="user.nombre_usuario">{{
+                user.nombre_usuario ||
+                noDataValue
+            }}
+            </div>
+            <div :class="{ 'user-cell': true, 'user-cell-empty': !user.apellido_usuario }" :title="user.apellido_usuario">{{
+                user.apellido_usuario ||
+                noDataValue
+            }}</div>
+            <div :class="{ 'user-cell': true, 'user-cell-empty': !user.celular_usuario }" :title="user.celular_usuario">{{
+                user.celular_usuario ||
+                noDataValue
+            }}</div>
+            <div :class="{ 'user-cell': true, 'user-cell-empty': !user.fecha_registro_usuario }">{{
+                getDate(user.fecha_registro_usuario) }}</div>
+            <div :class="{ 'user-cell': true, 'user-cell-empty': !user.estado_usuario }">{{ user.estado_usuario ||
+                noDataValue
+            }}
+            </div>
+            <div :class="{ 'user-cell': true, 'user-cell-empty': !user.direccion_usuario }" :title="user.direccion_usuario">
+                {{ user.direccion_usuario ||
+                    noDataValue }}</div>
+            <div :class="{ 'user-cell': true, 'user-cell-empty': !user.fecha_nacimiento_usuario }">{{
+                getDate(user.fecha_nacimiento_usuario) }}</div>
+
+            <!-- <div class="user-cell">{{ user.roles.map(role => role.id_rol.nombre_rol).join(', ') }}</div> -->
+        </div>
     </div>
 </template>
   
 <script setup>
+
+import UserService from '../services/UserService'
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
+// import axios from 'axios'; 
 
-const usuarios = ref([]);
+const users = ref([{}])
+const noDataValue = 'Vacío';
 
-const fetchUsuarios = async () => {
-    try {
-        const response = await axios.get('http://localhost:3000/api/users');
-        usuarios.value = response.data;
-        console.log(usuarios)
-    } catch (error) {
-        console.error('Error al obtener usuarios y roles:', error);
+const getDate = (time) => {
+    if (time != null) {
+        return time.split("T")[0];
     }
+    return noDataValue;
+}
+
+const fetchUsers = async () => {
+    users.value = await UserService.fetchAll()
+    console.log(users)
 };
 
 onMounted(() => {
-    fetchUsuarios();
+    fetchUsers();
 });
 </script>
   
 <style scoped>
 .user-table {
-    width: 100%;
-    border-collapse: collapse;
-    border-spacing: 10px;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 0.1fr auto;
+    border-radius: 5px;
+    margin: 0px 10px;
+    gap: 8px;
 }
 
-.user-table th,
-.user-table td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
+.user-table {
+    max-height: 63vh;
+    overflow-y: auto;
 }
 
-.user-table th {
-    background-color: #f2f2f2;
+.row {
+    display: grid;
+    grid-template-columns: .5fr 1fr 1fr 1fr 1fr 1fr .5fr 1fr 1fr 1fr;
+    border-radius: 5px;
+    background-color: var(--primary-color);
+    padding: 10px;
+    align-items: center;
+    text-align: center;
 }
 
-.user-table tr:nth-child(even) {
-    background-color: #f2f2f2;
+.user-header {
+    color: var(--black-color);
+    font-weight: bold;
+}
+
+.user-cell {
+    padding: 0px 10px;
+    font-size: .9rem;
+    min-width: 10%;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+}
+
+.user-header>.user-cell {
+    -webkit-line-clamp: 3;
+}
+
+.user-cell-empty {
+    color: gray;
+    font-style: italic;
+}
+
+.user-row {
+    cursor: pointer;
+}
+
+.user-row:hover {
+    background-color: var(--background-color);
 }
 </style>
-  

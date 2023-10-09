@@ -30,7 +30,7 @@ function activateSubMenu(submenu) {
     display: grid;
     grid-template-rows: auto 1fr 4fr;
     grid-template-columns: 1fr 7fr;
-    gap: 2%;
+
 }
 
 .header {
@@ -47,6 +47,7 @@ function activateSubMenu(submenu) {
 .search {
     grid-row: 2/3;
     grid-column: 2/-1;
+    position: relative;
 }
 
 .table {
