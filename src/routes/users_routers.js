@@ -37,14 +37,48 @@ router.get('/users', async (req, res) => {
     }
 });
 
-
-
-
-router.get('/users/:id', async (req, res) => {
+router.get('/users/id/:id', async (req, res) => {
     try {
+        
         const foundUser = await orm.usuarios.findFirst({
             where: {
                 documento_usuario: parseInt(req.params.id)
+                
+            },
+            include: {
+                tipo_documentos: true
+            }
+        });
+
+        if (!foundUser) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        res.json(foundUser);
+    } catch (error) {
+        console.error("Error fetching User:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+
+router.get('/users/:value', async (req, res) => {
+    try {
+        const val = req.params.value
+        const foundUser = await orm.usuarios.findFirst({
+            where: {
+                OR:[
+                    {
+                        nombre_usuario:val
+                    },
+                    {
+                        apellido_usuario:val
+                    }
+                ]
+                
+            },
+            include: {
+                tipo_documentos: true
             }
         });
 
