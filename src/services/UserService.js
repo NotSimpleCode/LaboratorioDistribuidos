@@ -1,8 +1,8 @@
-import CrudService from './CrudService';
+import CrudService from "./CrudService";
 
 class UserService extends CrudService {
     constructor() {
-        super('users');
+        super('users')
     }
 }
 

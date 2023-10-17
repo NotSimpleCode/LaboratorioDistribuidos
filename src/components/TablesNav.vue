@@ -2,63 +2,49 @@
     <nav class="menu">
         <div class="menu-item" @click="toggleMenu('users')">
             <i class="bi bi-people-fill"></i>
-            <p :class="{ active: activeMenu === 'users' }">Usuarios</p>
+            <p :class="{ active: tableStore.activeMenu === 'users' }">Usuarios</p>
         </div>
-        <div class="submenu" :class="{ 'expanded': expandedMenu === 'users' }">
-            <p :class="{ active: activeSubMenu == 'verListaUsuarios' }" @click="activateSubMenu('verListaUsuarios')">Ver
+        <div class="submenu" :class="{ 'expanded': isActiveMenu('users') }">
+            <p :class="{ active: tableStore.activeSubMenu == 'users' }" @click="activateSubMenu('users')">Ver
                 Lista</p>
-            <p :class="{ active: activeSubMenu === 'registrar' }">Registrar</p>
+            <p :class="{ active: tableStore.activeSubMenu === 'registrar' }">Registrar</p>
         </div>
         <div class="menu-item" @click="toggleMenu('roles')">
             <i class="bi bi-person-arms-up"></i>
-            <p :class="{ active: activeMenu === 'roles' }">Roles</p>
+            <p :class="{ active: tableStore.activeMenu === 'roles' }">Roles</p>
         </div>
-        <div class="submenu" :class="{ 'expanded': expandedMenu === 'roles' }">
-            <p :class="{ active: activeSubMenu === 'verListaRoles' }" @click="activateSubMenu('verListaRoles')">Ver Lista
+        <div class="submenu" :class="{ 'expanded': isActiveMenu('roles') }">
+            <p :class="{ active: tableStore.activeSubMenu === 'roles' }" @click="activateSubMenu('roles')">Ver Lista
             </p>
-            <p :class="{ active: activeSubMenu === 'registrar' }">Registrar</p>
+            <p :class="{ active: tableStore.activeSubMenu === 'registrar' }">Registrar</p>
         </div>
     </nav>
 </template>
   
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { onMounted, onUnmounted } from 'vue';
+import { useTableStore } from '../store/TableStore';
+const tableStore = useTableStore()
 
-let expandedMenu = ref(null);
-let activeMenu = ref(null);
-//let activeSubMenu = ref(null);
+const toggleMenu = (menu) => {
+    tableStore.toggleMenu(menu);
+};
 
-const props = defineProps({
-    activeSubMenu: String
-})
+const isActiveMenu = (menu) => {
+    return tableStore.isActiveMenu(menu);
+};
 
-const emmits = defineEmits(['update:activeSubMenu'])
-
-function toggleMenu(menu) {
-    if (expandedMenu.value === menu) {
-        collapseMenu();
-    } else {
-        expandedMenu.value = menu;
-    }
+const activateSubMenu = (subMenu) => {
+    tableStore.setActiveSubMenu(subMenu)
 }
 
-function collapseMenu() {
-    expandedMenu.value = null;
-    activeMenu.value = null;
-}
-
-// Manejar clics fuera del menú para cerrar el submenú
 function handleDocumentClick(event) {
     const target = event.target;
     const isInsideMenu = target.closest('.menu-item');
     const isInside = target.closest('.submenu');
     if (!isInsideMenu && !isInside) {
-        collapseMenu();
+        tableStore.closeMenu();
     }
-}
-
-function activateSubMenu(submenu) {
-    emmits('update:activeSubMenu', submenu)
 }
 
 onMounted(() => {
@@ -74,8 +60,8 @@ onUnmounted(() => {
 .menu {
     background-color: var(--secondary-color);
     color: var(--primary-color);
-    min-height: 83vh;
     user-select: none;
+    max-height: 100%;
 }
 
 .menu-item {
@@ -114,7 +100,6 @@ onUnmounted(() => {
     border-top-left-radius: 5px;
 
 }
-
 
 .menu-item:hover {
     background-color: var(--third-color);
