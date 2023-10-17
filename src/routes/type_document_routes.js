@@ -22,7 +22,7 @@ router.get('/typesDocument/:id', async (req, res) => {
         }
     })
     if(!typeDocumentFound)
-        return res.status(404).json({error:"Type document not found"})
+        return res.status(400).json({error:"Type document not found"})
     res.json(typeDocumentFound)
 });
 
@@ -33,7 +33,7 @@ router.delete('/typesDocument/:id', async (req, res) => {
         }
     })
     if(!typeDocumentDelete)
-        return res.status(404).json({error:"Type document not found"})
+        return res.status(400).json({error:"Type document not found"})
     return res.json(typeDocumentDelete)
 });
 
@@ -45,7 +45,7 @@ router.put('/typesDocument/:id', async (req, res) => {
         data: req.body
     })
     if(!typeDocumentUpdate)
-        return res.status(404).json({error:"Type document not found"})
+        return res.status(400).json({error:"Type document not found"})
     return res.json(typeDocumentUpdate)
 });
 

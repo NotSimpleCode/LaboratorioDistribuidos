@@ -94,10 +94,11 @@ router.put('/users/:id', async (req, res) => {
         });
 
         if (UserUpdate === null) {
-            return res.status(404).json({ error: "User not found" });
+            res.status(404).json({ error: "User not found" });
+        }else{
+            res.json({ info: "User updated successfully" });
         }
 
-        return res.json({ info: "User updated successfully" });
     } catch (error) {
         console.error("Error updating User:", error);
         return res.status(500).json({ error: "Internal server error" });
@@ -117,5 +118,36 @@ router.post('/users', async (req, res) => {
         return res.status(400).json({ error: "User could not be created." });
     }
 });
+
+router.patch('/users/:document', async (req, res) => {
+    const { name } = req.body; 
+    const nameUser = await orm.usuarios.update({
+        where: {
+            document: parseInt(req.params.document)
+        },
+        data: {
+            name: name 
+        }
+    })
+    if (!nameUser)
+        return res.status(404).json({ error: "User not found" })
+    return res.status(200).json({message:"Modified successfully"})
+});
+
+router.patch('/users/:id', async (req, res) => {
+    const { foto_usuario } = req.body; 
+    const fotoUser = await orm.usuarios.update({
+        where: {
+            documento_usuario: parseInt(req.params.id)
+        },
+        data: {
+            foto_usuario:foto_usuario
+        }
+    })
+    if (!fotoUser)
+        return res.status(404).json({ error: "User not found" })
+    return res.status(200).json({message:"Picture Modified successfully"})
+});
+
 
 export default router;
