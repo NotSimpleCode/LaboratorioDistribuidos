@@ -31,10 +31,12 @@ model usuarios {
 }
 
 model usuarios_roles {
-  id_usuario Int
-  id_rol     Int
-  usuarios   usuarios @relation(fields: [id_usuario], references: [documento_usuario], onDelete: NoAction, onUpdate: NoAction, map: "usuarios_roles_ibfk_1")
-  roles      roles    @relation(fields: [id_rol], references: [id_rol], onDelete: NoAction, onUpdate: NoAction, map: "usuarios_roles_ibfk_2")
+  id_usuario       Int
+  id_rol           Int
+  nick_usuario     String   @unique(map: "nick_usuario") @db.VarChar(40)
+  password_usuario String   @db.VarChar(255)
+  usuarios         usuarios @relation(fields: [id_usuario], references: [documento_usuario], onDelete: NoAction, onUpdate: NoAction, map: "usuarios_roles_ibfk_1")
+  roles            roles    @relation(fields: [id_rol], references: [id_rol], onDelete: NoAction, onUpdate: NoAction, map: "usuarios_roles_ibfk_2")
 
   @@id([id_usuario, id_rol])
   @@index([id_rol], map: "id_rol")
