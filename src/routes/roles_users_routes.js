@@ -36,6 +36,9 @@ router.get('/connection',auth.authenticateToken, async (req, res) => {
         const connections = await orm.usuarios_roles.findMany({
             skip: startIndex,
             take: elementosPorPagina,
+	    include: {
+		roles: true
+	    }
         });
 
         if (connections.length !=0) {
