@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import UserService from '../services/UserService'
 import { useAuthStore } from '../store/AuthStore'
+import UploadService from '../services/UploadService'
 
 export const useUserStore = defineStore('user', {
     state: () => ({
@@ -39,6 +40,11 @@ export const useUserStore = defineStore('user', {
         getUserDetails(userId) {
             return this.users.find(user => user.documento_usuario === userId);
         },
+
+        updateImg(userId, img, token) {
+            UploadService.updateImg(userId, img, token)
+        },
+
         async fetchTotalUsers() {
             this.totalUsers = await UserService.fetchCount(this.getToken())
         },

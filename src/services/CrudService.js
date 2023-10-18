@@ -11,7 +11,7 @@ export default class CrudService {
             const response = await axios.get(this.url,
                 {
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `${token}`
                     }
                 });
             return response.data
@@ -26,7 +26,7 @@ export default class CrudService {
             const response = await axios.post(this.url, data,
                 {
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `${token}`
                     }
                 })
             return response.data
@@ -41,7 +41,7 @@ export default class CrudService {
             const response = await axios.get(this.url + `?pagina=${page}`,
                 {
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `${token}`
                     }
                 })
             return response.data
@@ -52,14 +52,13 @@ export default class CrudService {
     }
 
     async fetchCount(token) {
-        console.log(token);
         try {
             const response = await axios.get(this.url + '/count',
                 {
                     headers: {
                         'Content-Type': 'Application/json',
                         'Accept': 'Application/json',
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `${token}`
                     }
                 })
             return response.data

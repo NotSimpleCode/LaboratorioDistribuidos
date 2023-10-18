@@ -23,6 +23,8 @@
   
 <script setup>
 import { ref } from 'vue';
+
+
 let isFocused = ref(false)
 let searchIcon = ref('../src/assets/search-white.svg')
 

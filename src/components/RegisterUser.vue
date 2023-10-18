@@ -107,7 +107,7 @@ function handleFileUpload(event) {
     const file = event.target.files[0];
     if (file) {
         newUser.value.photo = file
-        imageUrl.value = URL.createObjectURL(file); // Se crea una URL de objeto para la vista previa
+        imageUrl.value = URL.createObjectURL(file);
     }
 }
 const fetchAllDocTypes = async () => {

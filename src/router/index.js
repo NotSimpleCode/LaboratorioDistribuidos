@@ -15,7 +15,7 @@ const router = createRouter({
       }
     },
     {
-      path: '/information',
+      path: '/',
       name: 'information',
       component: MainInfoView,
       meta: {
@@ -30,7 +30,7 @@ router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
   const isAuth = authStore.token
 
-  if ((to.meta.authRequired) && (isAuth == null)) {
+  if ((to.meta.authRequired) && (!isAuth)) {
     next('login')
   } else {
     next()

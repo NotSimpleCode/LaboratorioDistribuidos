@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import ConnectionService from "../services/ConnectionService";
+import { useAuthStore } from '../store/AuthStore'
 
 export const useConnectionStore = defineStore('conn', {
     state: () => ({
@@ -11,12 +12,16 @@ export const useConnectionStore = defineStore('conn', {
         totalConn: 2,
     }),
     actions: {
+        getToken() {
+            const authStore = useAuthStore()
+            return authStore.token
+        },
         async onInit() {
             await this.fetchTotalConnections();
             this.calculateTotalPages();
         },
         async fetchAll() {
-            this.connections = await ConnectionService.fetchAll();
+            this.connections = await ConnectionService.fetchAll(this.getToken());
             this.filteredConnections = this.connections
         },
         filterRoles(searchTerm) {
@@ -26,10 +31,10 @@ export const useConnectionStore = defineStore('conn', {
             });
         },
         async fetchPage() {
-            this.connections = await ConnectionService.fetchPage(this.currentPage);
+            this.connections = await ConnectionService.fetchPage(this.currentPage, this.getToken());
         },
         async fetchTotalConnections() {
-            this.totalConn = await ConnectionService.fetchCount()
+            this.totalConn = await ConnectionService.fetchCount(this.getToken())
         },
         calculateTotalPages() {
             this.totalPages = Math.ceil(this.totalConn / this.connPerPage);

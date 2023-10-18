@@ -33,7 +33,7 @@
                 </div>
             </div>
             <div class="pagination">
-                <label>{{ getActualRange() }}</label>
+                <!-- <label>{{ getActualRange() }}</label> -->
                 <div>
                     <button @click="fastBackward()" :disabled="currentPage.valueOf === 1" class="nav-button"><i
                             class="bi bi-chevron-double-left"></i></button>
@@ -54,7 +54,7 @@
 </template>
   
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onBeforeMount } from 'vue';
 import { useConnectionStore } from '../store/ConnStore';
 
 const connectionStore = useConnectionStore()
@@ -103,6 +103,7 @@ const changePage = async (page) => {
 const fetchData = async () => {
     await connectionStore.fetchPage();
 };
+
 const visiblePages = computed(() => {
     const pageSize = 10; // Número de elementos por página
 
@@ -118,11 +119,11 @@ const visiblePages = computed(() => {
 })
 
 
-const getActualRange = () => {
-    const start = (currentPage.value * connectionStore.usersPerPage) - connectionStore.usersPerPage + 1;
-    const end = currentPage.value * connectionStore.usersPerPage;
-    return `${start}-${end} de ${connectionStore.totalUsers}`;
-};
+// const getActualRange = () => {
+//     const start = (currentPage.value * connectionStore.usersPerPage) - connectionStore.usersPerPage + 1;
+//     const end = currentPage.value * connectionStore.usersPerPage;
+//     return `${start}-${end} de ${connectionStore.totalUsers}`;
+// };
 
 const fastBackward = () => {
     if (currentPage.value - 10 <= 1) {
@@ -141,8 +142,11 @@ const fastForward = () => {
     fetchData()
 }
 
+onBeforeMount(() => {
+    connectionStore.onInit()
+}),
 
-fetchData()
+    fetchData()
 </script>
   
 <style scoped>
@@ -292,7 +296,7 @@ fetchData()
 .pagination {
     text-align: center;
     display: flex;
-    justify-content: space-between;
+    justify-content: end;
     padding: 10px 20px;
 
 }

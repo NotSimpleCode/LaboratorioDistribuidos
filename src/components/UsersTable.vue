@@ -14,7 +14,6 @@
             <div class="user-header row">
                 <div class="user-cell"></div>
                 <div class="user-cell">N° Doc</div>
-                <!-- <div class="user-cell">Tipo Doc</div> -->
                 <div class="user-cell">Nombre</div>
                 <div class="user-cell">Apellido</div>
                 <div class="user-cell">Celular</div>
@@ -198,6 +197,8 @@ const fastForward = () => {
 onBeforeMount(() => {
     userStore.onInit()
 })
+
+fetchData()
 
 </script>
   
