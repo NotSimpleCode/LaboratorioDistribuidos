@@ -8,7 +8,7 @@ router.get('/roles', auth.authenticateToken, async (req, res) => {
     try {
         
 
-        // Realiza la consulta a la base de datos para obtener los elementos de la página actual
+        // Realiza la consulta a la base de datos para obtener los elementos
         const roles = await orm.roles.findMany({
 
         });
@@ -17,7 +17,7 @@ router.get('/roles', auth.authenticateToken, async (req, res) => {
             res.json(roles);
         }else{
 
-            // Envía la respuesta con los elementos de la página actual
+            // Envía la respuesta con los elementos
             res.status(204).json({ info: "Not content" });
         }
     } catch (error) {

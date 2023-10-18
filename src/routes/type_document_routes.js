@@ -5,21 +5,14 @@ import * as auth from '../authToken.js';
 const router = Router();
 
 router.get('/typesDocument',auth.authenticateToken, async (req, res) => {
-    const tipo_documentos = await orm.tipo_documentos.findMany({
-        include: {
-            user: true
-        }
-    })
+    const tipo_documentos = await orm.tipo_documentos.findMany({})
     res.json(tipo_documentos)
 });
 
 router.get('/typesDocument/:id',auth.authenticateToken,  async (req, res) => {
     const typeDocumentFound = await orm.tipo_documentos.findFirst({
         where:{
-            id: parseInt(req.params.id)
-        },
-        include: {
-            users: true
+            id_tipo_documento: parseInt(req.params.id)
         }
     })
     if(!typeDocumentFound)
@@ -30,7 +23,7 @@ router.get('/typesDocument/:id',auth.authenticateToken,  async (req, res) => {
 router.delete('/typesDocument/:id',auth.authenticateToken,  async (req, res) => {
     const typeDocumentDelete = await orm.tipo_documentos.delete({
         where:{
-            id: parseInt(req.params.id)
+            id_tipo_documento: parseInt(req.params.id)
         }
     })
     if(!typeDocumentDelete)
@@ -41,7 +34,7 @@ router.delete('/typesDocument/:id',auth.authenticateToken,  async (req, res) => 
 router.put('/typesDocument/:id',auth.authenticateToken,  async (req, res) => {
     const typeDocumentUpdate = await orm.tipo_documentos.update({
         where:{
-            id: parseInt(req.params.id)
+            id_tipo_documento: parseInt(req.params.id)
         },
         data: req.body
     })

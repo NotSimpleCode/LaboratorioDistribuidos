@@ -150,20 +150,43 @@ router.post('/connection', async (req, res) => {
     }
 });
 
+router.post('/connection/admin', async (req, res) => {
+    try {
+        const {id_usuario, id_rol, nick_usuario, password_usuario } = req.body;
+
+        // Genera un hash de la contraseña
+        const hashedPassword = await bcrypt.hash(password_usuario, 10); // "10" es el costo de la encriptación
+
+        // Crea un nuevo usuario con la contraseña encriptada
+        const newConnection = await orm.usuarios_roles.create({
+            data: {
+                id_usuario,
+                id_rol,
+                nick_usuario,
+                password_usuario: hashedPassword// Almacena el hash en la base de datos
+            }
+        });
+        
+        res.status(200).json({ info: "Connection created!" });
+    } catch (error) {
+        console.error("Error creating connection:", error);
+        return res.status(400).json({ error: "User connection could not be created." });
+    }
+});
+
 
 //LOGIN
 
 router.post('/login',async (req, res) => {
     try {
-        const { nombre_usuario, password_usuario } = req.body;
+        const { nick_usuario, password_usuario } = req.body;
 
         const logueo = await orm.usuarios_roles.findFirst({
             where: {
-                nick_usuario: nombre_usuario
+                nick_usuario: nick_usuario
             }
         });
-
-        if (!logueo) {
+        if (logueo ===null) {
             res.status(404).json({ error: "Username not found" });
         } else {
             // Compara el hash de la contraseña ingresada con el hash almacenado
@@ -175,9 +198,9 @@ router.post('/login',async (req, res) => {
                     nick_usuario: logueo.nick_usuario,
                     password_usuario: logueo.password_usuario
                 })
-                res.status(200).json({ message: "Login successful"});
+                res.status(200).json({status:true,info:"Login Successfully",token:token});
             } else {
-                res.status(401).json({ error: "Incorrect password" });
+                res.status(401).json({status:false ,error: "Incorrect password" });
             }
         }
     } catch (error) {
