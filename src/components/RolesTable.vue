@@ -2,7 +2,7 @@
     <section class="search-container">
         <h1 class="table-title">Roles</h1>
         <div class="search-bar">
-            <input class="search" type="text" placeholder="Buscar..." v-model="searchTerm" />
+            <input class="search" type="text" placeholder="Buscar..." v-model="searchTerm" @input="filterRoles" />
             <input id="tableSearch" class="search-button" type="button" value="">
         </div>
         <div class="options">
@@ -17,7 +17,7 @@
             <div class="role-cell">Estado</div>
             <div class="role-cell">Descripción</div>
         </div>
-        <div v-for="role in  roles " :key="role.id_rol" class="role-row row"> <!-- Filas de datos -->
+        <div v-for="role in  filteredRoles" :key="role.id_rol" class="role-row row"> <!-- Filas de datos -->
             <div class="role-cell">{{ role.id_rol }}</div>
             <div :class="{ 'role-cell': true, 'role-cell-empty': !role.nombre_rol }">{{ role.nombre_rol || noDataValue }}
             </div>
@@ -34,50 +34,41 @@
 </template>
   
 <script setup>
-import { ref, onMounted } from 'vue';
-//import RoleService from '../services/RoleService';
+import { ref, computed } from 'vue';
+import { useRoleStore } from '../store/RoleStore'
 
-const roles = ref([]);
+const roleStore = useRoleStore()
 const noDataValue = "Vacío"
 const searchTerm = ref("")
 
-const fetchRoles = async () => {
-    try {
-        //roles.value = await RoleService.fetchAll() 
-        const response = [
-            { id_rol: 1, nombre_rol: 'Admin', fecha_creacion_rol: '2023-10-06T00:00:00.000Z', estado_rol: 'A', descripcion_rol: "Almost a god" },
-            { id_rol: 2, nombre_rol: 'user', fecha_creacion_rol: '2023-10-06T00:00:00.000Z', estado_rol: 'A', descripcion_rol: "just an user" },
-            { id_rol: 3, nombre_rol: 'user', fecha_creacion_rol: '', estado_rol: 'A', descripcion_rol: "just an user" },
-            { id_rol: 4, nombre_rol: 'user', fecha_creacion_rol: '2023-10-06T00:00:00.000Z', estado_rol: 'A', descripcion_rol: "" },
-            { id_rol: 5, nombre_rol: 'user', fecha_creacion_rol: '2023-10-06T00:00:00.000Z', estado_rol: 'A', descripcion_rol: "just an user" },
-            { id_rol: 6, nombre_rol: 'user', fecha_creacion_rol: '2023-10-06T00:00:00.000Z', estado_rol: 'A', descripcion_rol: "just an user" },
-            { id_rol: 7, nombre_rol: 'user', fecha_creacion_rol: '2023-10-06T00:00:00.000Z', estado_rol: '', descripcion_rol: "just an user" },
-            { id_rol: 8, nombre_rol: 'user', fecha_creacion_rol: '2023-10-06T00:00:00.000Z', estado_rol: 'A', descripcion_rol: "just an user" },
-            { id_rol: 9, nombre_rol: 'user', fecha_creacion_rol: '', estado_rol: 'A', descripcion_rol: "just an user" },
-            { id_rol: 10, nombre_rol: 'user', fecha_creacion_rol: '2023-10-06', estado_rol: 'A', descripcion_rol: "" },
-            { id_rol: 11, nombre_rol: 'user', fecha_creacion_rol: '2023-10-06T00:00:00.000Z', estado_rol: 'A', descripcion_rol: "just an user" },
-            { id_rol: 12, nombre_rol: 'user', fecha_creacion_rol: '', estado_rol: 'A', descripcion_rol: "just an user" },
-            { id_rol: 13, nombre_rol: 'user', fecha_creacion_rol: '2023-10-06T00:00:00.000Z', estado_rol: 'A', descripcion_rol: "just an user" },
-            { id_rol: 14, nombre_rol: 'user', fecha_creacion_rol: '2023-10-06T00:00:00.000Z', estado_rol: 'A', descripcion_rol: "just an user" },
-            { id_rol: 15, nombre_rol: 'user', fecha_creacion_rol: '2023-10-06T00:00:00.000Z', estado_rol: 'A', descripcion_rol: "just an user" },
-            { id_rol: 16, nombre_rol: 'user', fecha_creacion_rol: '2023-10-06T00:00:00.000Z', estado_rol: 'A', descripcion_rol: "" },
-            { id_rol: 17, nombre_rol: 'user', fecha_creacion_rol: '2023-10-06T00:00:00.000Z', estado_rol: 'A', descripcion_rol: "just an user" },
-        ];
-        roles.value = response;
-        console.log(roles)
-    } catch (error) {
-        console.error('Error al obtener roles:', error);
-    }
-};
+
 const getDate = (time) => {
     if (time != null) {
         return time.split("T")[0];
     }
     return noDataValue;
 }
-onMounted(() => {
-    fetchRoles();
+
+
+const filteredRoles = computed(() => {
+
+    if (searchTerm.value.trim() === '') {
+        return roleStore.roles;
+    } else {
+        return roleStore.filteredRoles;
+    }
 });
+
+const filterRoles = async () => {
+    const term = searchTerm.value.trim().toLowerCase();
+    console.log(term);
+    if (term === '') {
+        roleStore.fetchRoles();
+    } else {
+        roleStore.filterRoles(term);
+    }
+}
+filterRoles()
 </script>
   
 <style scoped>
@@ -150,8 +141,10 @@ onMounted(() => {
 }
 
 .role-table {
-    position: relative;
     display: grid;
+    position: relative;
+    display: flex;
+    flex-direction: column;
     grid-template-columns: 1fr;
     grid-template-rows: 0.1fr auto;
     border-radius: 5px;
@@ -168,7 +161,7 @@ onMounted(() => {
 }
 
 .role-table {
-    max-height: 63vh;
+    max-height: 60vh;
     overflow-y: auto;
 }
 
@@ -195,7 +188,7 @@ onMounted(() => {
     background-color: var(--primary-color);
     padding: 10px;
     align-items: center;
-    text-align: center;
+    text-align: left;
 }
 
 .role-cell {
@@ -211,6 +204,7 @@ onMounted(() => {
 
 .role-row {
     cursor: pointer;
+    height: 50px;
 }
 
 .role-row:hover {

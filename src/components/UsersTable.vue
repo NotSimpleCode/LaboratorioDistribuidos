@@ -9,62 +9,84 @@
 
         </div>
     </section>
-    <div class="user-table">
-        <div class="user-header row">
-            <div class="user-cell"></div>
-            <div class="user-cell">N° Doc</div>
-            <!-- <div class="user-cell">Tipo Doc</div> -->
-            <div class="user-cell">Nombre</div>
-            <div class="user-cell">Apellido</div>
-            <div class="user-cell">Celular</div>
-            <div class="user-cell">Fecha de Registro</div>
-            <div class="user-cell">Estado</div>
-            <div class="user-cell">Dirección</div>
-            <!-- <div class="user-cell">Fecha de Nacimiento</div> -->
-            <div class="user-cell">Rol</div>
-        </div>
-        <div v-for="user in filteredUsers " :key="user" class="user-row row"
-            @click="showUserDetails(user.documento_usuario)">
-            <div class="user-cell user-photo" :style="getUserImageStyle(user.foto_usuario)">
+    <div class="user-table-page">
+        <div class="user-table">
+            <div class="user-header row">
+                <div class="user-cell"></div>
+                <div class="user-cell">N° Doc</div>
+                <!-- <div class="user-cell">Tipo Doc</div> -->
+                <div class="user-cell">Nombre</div>
+                <div class="user-cell">Apellido</div>
+                <div class="user-cell">Celular</div>
+                <div class="user-cell">Fecha de Registro</div>
+                <div class="user-cell">Estado</div>
+                <div class="user-cell">Dirección</div>
+                <!-- <div class="user-cell">Fecha de Nacimiento</div> -->
+                <div class="user-cell">Rol</div>
             </div>
-            <div :class="{ 'user-cell': true, 'user-cell-empty': !user.documento_usuario }">{{ user.documento_usuario ||
-                            noDataValue }}</div>
-            <!-- <div :class="{ 'user-cell': true, 'user-cell-empty': !user.tipo_documentos }">{{ user.tipo_documentos ?
+            <div v-for="user in filteredUsers " :key="user" class="user-row row"
+                @click="showUserDetails(user.documento_usuario)">
+                <div class="user-cell user-photo" :style="getUserImageStyle(user.foto_usuario)">
+                </div>
+                <div :class="{ 'user-cell': true, 'user-cell-empty': !user.documento_usuario }">{{ user.documento_usuario ||
+                    noDataValue }}</div>
+                <!-- <div :class="{ 'user-cell': true, 'user-cell-empty': !user.tipo_documentos }">{{ user.tipo_documentos ?
                 user.tipo_documentos.tipo_documento : noDataValue }}</div> -->
-            <div :class="{ 'user-cell': true, 'user-cell-empty': !user.nombre_usuario }" :title="user.nombre_usuario">{{
-                            user.nombre_usuario ||
-                            noDataValue
-                            }}
-            </div>
-            <div :class="{ 'user-cell': true, 'user-cell-empty': !user.apellido_usuario }" :title="user.apellido_usuario">{{
-                            user.apellido_usuario ||
-                            noDataValue
-                            }}</div>
-            <div :class="{ 'user-cell': true, 'user-cell-empty': !user.celular_usuario }" :title="user.celular_usuario">
-                {{
-                                user.celular_usuario ||
-                                noDataValue
-                                }}</div>
-            <div :class="{ 'user-cell': true, 'user-cell-empty': !user.fecha_registro_usuario }">{{
-                            getDate(user.fecha_registro_usuario) }}</div>
-            <div :class="{ 'user-cell': true, 'user-cell-empty': !user.estado_usuario }">{{ user.estado_usuario ||
-                            noDataValue
-                            }}
-            </div>
-            <div :class="{ 'user-cell': true, 'user-cell-empty': !user.direccion_usuario }" :title="user.direccion_usuario">
-                {{ user.direccion_usuario ||
-                                noDataValue }}</div>
-            <!-- <div :class="{ 'user-cell': true, 'user-cell-empty': !user.fecha_nacimiento_usuario }">{{
+                <div :class="{ 'user-cell': true, 'user-cell-empty': !user.nombre_usuario }" :title="user.nombre_usuario">{{
+                    user.nombre_usuario ||
+                    noDataValue
+                }}
+                </div>
+                <div :class="{ 'user-cell': true, 'user-cell-empty': !user.apellido_usuario }"
+                    :title="user.apellido_usuario">{{
+                        user.apellido_usuario ||
+                        noDataValue
+                    }}</div>
+                <div :class="{ 'user-cell': true, 'user-cell-empty': !user.celular_usuario }" :title="user.celular_usuario">
+                    {{
+                        user.celular_usuario ||
+                        noDataValue
+                    }}</div>
+                <div :class="{ 'user-cell': true, 'user-cell-empty': !user.fecha_registro_usuario }">{{
+                    getDate(user.fecha_registro_usuario) }}</div>
+                <div :class="{ 'user-cell': true, 'user-cell-empty': !user.estado_usuario }">{{ user.estado_usuario ||
+                    noDataValue
+                }}
+                </div>
+                <div :class="{ 'user-cell': true, 'user-cell-empty': !user.direccion_usuario }"
+                    :title="user.direccion_usuario">
+                    {{ user.direccion_usuario ||
+                        noDataValue }}</div>
+                <!-- <div :class="{ 'user-cell': true, 'user-cell-empty': !user.fecha_nacimiento_usuario }">{{
                 getDate(user.fecha_nacimiento_usuario) }}</div> -->
-            <!-- Cambiar por los datos de Roles -->
-            <div :class="{ 'user-cell': true }">Empleado</div>
+                <!-- Cambiar por los datos de Roles -->
+                <div :class="{ 'user-cell': true }">Empleado</div>
+            </div>
+            <UserDetails v-if="showDetails" :user-id="selectedUserId" :show="showDetails" @close="closeUserDetails" />
         </div>
-        <UserDetails v-if="showDetails" :user-id="selectedUserId" :show="showDetails" @close="closeUserDetails" />
+        <div class="pagination">
+            <label>{{ getActualInfo() }}</label>
+            <div>
+                <button @click="fastBackward()" :disabled="currentPage.valueOf === 1" class="nav-button"><i
+                        class="bi bi-chevron-double-left"></i></button>
+                <button @click="previousPage" :disabled="userStore.currentPage === 1" class="nav-button"><i
+                        class="bi bi-chevron-left"></i></button>
+                <button v-for="page in visiblePages" :key="page" @click="changePage(page)"
+                    :class="{ 'page-button': true, 'current-page': page === userStore.currentPage }" class="">
+                    {{ page }}
+                </button>
+                <button @click="nextPage" :disabled="userStore.currentPage === userStore.totalPages" class="nav-button"><i
+                        class="bi bi-chevron-right"></i></button>
+                <button @click="fastForward()" :disabled="currentPage.valueOf === 1" class="nav-button"><i
+                        class="bi bi-chevron-double-right"></i></button>
+            </div>
+
+        </div>
     </div>
 </template>
   
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onBeforeMount } from 'vue';
 import { useUserStore } from '../store/UserStore';
 import UserDetails from './UserDetails.vue'
 
@@ -73,6 +95,8 @@ const userStore = useUserStore()
 const searchTerm = ref("")
 const showDetails = ref(false);
 const selectedUserId = ref(null);
+const currentPage = computed(() => userStore.currentPage);
+const totalPages = computed(() => userStore.totalPages);
 
 const showUserDetails = (userId) => {
     selectedUserId.value = userId;
@@ -91,7 +115,6 @@ const getDate = (time) => {
 }
 
 const filteredUsers = computed(() => {
-    console.log(userStore.users)
 
     if (searchTerm.value.trim() === '') {
         return userStore.users;
@@ -117,8 +140,71 @@ const getUserImageStyle = (foto_usuario) => {
     return { 'background-image': backgroundImage };
 };
 
-filterUsers()
+const previousPage = () => {
+    if (currentPage.value > 1) {
+        userStore.currentPage--;
+        fetchData();
+    }
+};
 
+const nextPage = () => {
+    if (currentPage.value < userStore.totalPages) {
+        userStore.currentPage++;
+        fetchData();
+    }
+};
+
+const changePage = async (page) => {
+    userStore.currentPage = page;
+    await userStore.fetchPage();
+};
+
+const fetchData = async () => {
+    await userStore.fetchPage();
+};
+const visiblePages = computed(() => {
+    const pageSize = 10; // Número de elementos por página
+
+    const start = Math.floor((currentPage.value - 1) / pageSize) * pageSize + 1;
+    const end = Math.min(start + pageSize - 1, totalPages.value);
+
+    const pages = [];
+    for (let i = start; i <= end; i++) {
+        pages.push(i);
+    }
+
+    return pages;
+})
+
+
+const getActualInfo = () => {
+    const start = (currentPage.value * userStore.usersPerPage) - userStore.usersPerPage + 1;
+    const end = currentPage.value * userStore.usersPerPage;
+    return `${start}-${end} de ${userStore.totalUsers}`;
+};
+
+const fastBackward = () => {
+    if (currentPage.value - 10 <= 1) {
+        userStore.currentPage = 1
+    } else {
+        userStore.currentPage -= 10
+    }
+    fetchData()
+}
+const fastForward = () => {
+    if (currentPage.value + 10 >= totalPages.value) {
+        userStore.currentPage = totalPages.value
+    } else {
+        userStore.currentPage += 10
+    }
+    fetchData()
+}
+
+onBeforeMount(() => {
+    userStore.onInit()
+})
+
+fetchData();
 </script>
   
 <style scoped>
@@ -190,14 +276,19 @@ filterUsers()
     grid-column: 2/3;
 }
 
+.user-table-page {
+    position: relative;
+
+}
+
 .user-table {
     display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: 0.1fr auto;
+    display: flex;
+    flex-direction: column;
     border-radius: 5px;
     margin: 0px 10px;
     gap: 8px;
-    max-height: 63vh;
+    height: 67vh;
     overflow-y: auto;
 }
 
@@ -209,6 +300,7 @@ filterUsers()
     padding: 5px;
     align-items: center;
     text-align: center;
+    max-height: 40px;
 }
 
 .user-header {
@@ -270,5 +362,54 @@ filterUsers()
 ::-webkit-scrollbar-track {
     /* Color de fondo de la barra de desplazamiento */
     background-color: rgba(0, 123, 255, 0.1);
+}
+
+.pagination {
+    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 20px;
+
+}
+
+.pagination>label {
+    color: var(--darker-primary);
+}
+
+.page-button {
+    display: inline-block;
+    padding: 4px 8px;
+    cursor: pointer;
+}
+
+.page-button,
+.nav-button {
+    background-color: var(--primary-color);
+    color: var(--secondary-color);
+    border-radius: 5px;
+
+    border: 1px solid lightgray;
+    margin: 0px 3px;
+}
+
+.page-button:hover {
+    background-color: var(--third-color);
+    color: #fff;
+}
+
+.nav-button {
+    display: inline-block;
+    padding: 4px 8px;
+    cursor: pointer;
+}
+
+.nav-button:hover {
+    background-color: var(--third-color);
+    color: #fff;
+}
+
+.current-page {
+    background-color: rgba(0, 123, 255, 0.7);
+    color: var(--primary-color);
 }
 </style>

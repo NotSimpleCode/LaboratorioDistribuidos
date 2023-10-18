@@ -15,4 +15,24 @@ export default class CrudService {
             throw error;
         }
     }
+
+    async fetchPage(page) {
+        try {
+            const response = await axios.get(this.url + `?pagina=${page}`)
+            return response.data
+        } catch (error) {
+            console.error(`Error al obtener ${this.entity}`, error);
+            throw error;
+        }
+    }
+
+    async fetchCount() {
+        try {
+            const response = await axios.get(this.url + '/count')
+            return response.data
+        } catch (error) {
+            console.error(`Error al obtener ${this.entity}`, error);
+            throw error;
+        }
+    }
 }

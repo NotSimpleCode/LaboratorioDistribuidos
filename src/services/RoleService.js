@@ -1,9 +1,9 @@
 import CrudService from './CrudService';
 
-class UserService extends CrudService {
+class RoleService extends CrudService {
     constructor() {
         super('roles');
     }
 }
 
-export default new UserService();
+export default new RoleService();
