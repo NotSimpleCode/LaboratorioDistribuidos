@@ -1,12 +1,13 @@
 import { Router } from "express";
 import {orm} from "../db.js"
+import * as auth from '../authToken.js';
 
 const router = Router();
 
 const elementosPorPagin = 10; // Cambia esto según tus necesidades
 const paginaPredeterminada = 1; // Página inicial
 
-router.get('/users', async (req, res) => {
+router.get('/users',auth.authenticateToken, async (req, res) => {
     try {
         const { pagina = paginaPredeterminada, elementos = elementosPorPagin } = req.query;
         const paginaActual = parseInt(pagina);
@@ -62,7 +63,7 @@ router.get('/users/id/:id', async (req, res) => {
 });
 
 
-router.get('/users/:value', async (req, res) => {
+router.get('/users/:value',auth.authenticateToken, async (req, res) => {
     try {
         const val = req.params.value
         const foundUser = await orm.usuarios.findFirst({
@@ -93,7 +94,7 @@ router.get('/users/:value', async (req, res) => {
     }
 });
 
-router.delete('/users/:id', async (req, res) => {
+router.delete('/users/:id',auth.authenticateToken, async (req, res) => {
     try {
 
         // Elimina el usuario por su ID_PERSONA y el ID_ROL proporcionado en la ruta
@@ -118,7 +119,7 @@ router.delete('/users/:id', async (req, res) => {
 
 
 
-router.put('/users/:id', async (req, res) => {
+router.put('/users/:id',auth.authenticateToken, async (req, res) => {
     try {
         const UserUpdate = await orm.usuarios_roles.update({
             where: {
@@ -139,7 +140,7 @@ router.put('/users/:id', async (req, res) => {
     }
 });
 
-router.post('/users', async (req, res) => {
+router.post('/users',auth.authenticateToken, async (req, res) => {
     try {
        
         const newConnection = await orm.usuarios.create({
@@ -153,7 +154,7 @@ router.post('/users', async (req, res) => {
     }
 });
 
-router.patch('/users/:document', async (req, res) => {
+router.patch('/users/:document',auth.authenticateToken, async (req, res) => {
     const { name } = req.body; 
     const nameUser = await orm.usuarios.update({
         where: {
@@ -168,7 +169,7 @@ router.patch('/users/:document', async (req, res) => {
     return res.status(200).json({message:"Modified successfully"})
 });
 
-router.patch('/users/:id', async (req, res) => {
+router.patch('/users/:id',auth.authenticateToken, async (req, res) => {
     const { foto_usuario } = req.body; 
     const fotoUser = await orm.usuarios.update({
         where: {
@@ -182,6 +183,7 @@ router.patch('/users/:id', async (req, res) => {
         return res.status(404).json({ error: "User not found" })
     return res.status(200).json({message:"Picture Modified successfully"})
 });
+
 
 
 export default router;

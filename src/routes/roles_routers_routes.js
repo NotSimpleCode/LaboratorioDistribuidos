@@ -1,9 +1,10 @@
 import { Router } from "express";
 import {orm} from "../db.js"
+import * as auth from '../authToken.js';
 
 const router = Router();
 
-router.get('/roles', async (req, res) => {
+router.get('/roles', auth.authenticateToken, async (req, res) => {
     try {
         
 
@@ -28,7 +29,7 @@ router.get('/roles', async (req, res) => {
 
 
 
-router.get('/roles/:id', async (req, res) => {
+router.get('/roles/:id',auth.authenticateToken, async (req, res) => {
     try {
         const foundRol = await orm.roles.findFirst({
             where: {
@@ -47,7 +48,7 @@ router.get('/roles/:id', async (req, res) => {
     }
 });
 
-router.delete('/roles/:id', async (req, res) => {
+router.delete('/roles/:id',auth.authenticateToken,async (req, res) => {
     try {
 
         // Elimina el rol por su el ID_ROL proporcionado en la ruta
@@ -72,7 +73,7 @@ router.delete('/roles/:id', async (req, res) => {
 
 
 
-router.put('/roles/:id', async (req, res) => {
+router.put('/roles/:id',auth.authenticateToken, async (req, res) => {
     try {
         const RolUpdate = await orm.roles_roles.update({
             where: {
@@ -92,7 +93,7 @@ router.put('/roles/:id', async (req, res) => {
     }
 });
 
-router.post('/roles', async (req, res) => {
+router.post('/roles',auth.authenticateToken, async (req, res) => {
     try {
        
         const newConnection = await orm.roles.create({

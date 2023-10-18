@@ -1,13 +1,14 @@
 import { Router } from "express";
 import {orm} from "../db.js"
 import bcrypt from 'bcrypt';
+import * as auth from '../authToken.js';
 
 const router = Router();
 
 const elementosPorPagin = 10; // Cambia esto según tus necesidades
 const paginaPredeterminada = 1; // Página inicial
 
-router.get('/connection', async (req, res) => {
+router.get('/connection',auth.authenticateToken, async (req, res) => {
     try {
         const { pagina = paginaPredeterminada, elementos = elementosPorPagin } = req.query;
         const paginaActual = parseInt(pagina);
@@ -38,7 +39,7 @@ router.get('/connection', async (req, res) => {
 
 
 
-router.get('/connection/:id', async (req, res) => {
+router.get('/connection/:id',auth.authenticateToken, async (req, res) => {
     try {
         const connectionFound = await orm.usuarios_roles.findFirst({
             where: {
@@ -57,7 +58,7 @@ router.get('/connection/:id', async (req, res) => {
     }
 });
 
-router.delete('/connection/:id/:id_rol', async (req, res) => {
+router.delete('/connection/:id/:id_rol',auth.authenticateToken, async (req, res) => {
     try {
         const usuarioID = parseInt(req.params.id);
         
@@ -88,7 +89,7 @@ router.delete('/connection/:id/:id_rol', async (req, res) => {
 
 
 
-router.put('/connection/:id', async (req, res) => {
+router.put('/connection/:id', auth.authenticateToken,async (req, res) => {
     try {
         const connectionUpdate = await orm.usuarios_roles.update({
             where: {
@@ -137,7 +138,7 @@ router.post('/connection', async (req, res) => {
 
 //LOGIN
 
-router.post('/login', async (req, res) => {
+router.post('/login',async (req, res) => {
     try {
         const { nombre_usuario, password_usuario } = req.body;
 
@@ -154,7 +155,12 @@ router.post('/login', async (req, res) => {
             const passwordMatch = await bcrypt.compare(password_usuario, logueo.password_usuario);
 
             if (passwordMatch) {
-                res.status(200).json({ message: "Login successful" });
+                //aqui token
+                const token = auth.generateToken({
+                    nick_usuario: logueo.nick_usuario,
+                    password_usuario: logueo.password_usuario
+                })
+                res.status(200).json({ message: "Login successful"});
             } else {
                 res.status(401).json({ error: "Incorrect password" });
             }

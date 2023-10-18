@@ -1,9 +1,10 @@
 import { Router } from "express";
 import {orm} from "../db.js"
+import * as auth from '../authToken.js';
 
 const router = Router();
 
-router.get('/typesDocument', async (req, res) => {
+router.get('/typesDocument',auth.authenticateToken, async (req, res) => {
     const tipo_documentos = await orm.tipo_documentos.findMany({
         include: {
             user: true
@@ -12,7 +13,7 @@ router.get('/typesDocument', async (req, res) => {
     res.json(tipo_documentos)
 });
 
-router.get('/typesDocument/:id', async (req, res) => {
+router.get('/typesDocument/:id',auth.authenticateToken,  async (req, res) => {
     const typeDocumentFound = await orm.tipo_documentos.findFirst({
         where:{
             id: parseInt(req.params.id)
@@ -26,7 +27,7 @@ router.get('/typesDocument/:id', async (req, res) => {
     res.json(typeDocumentFound)
 });
 
-router.delete('/typesDocument/:id', async (req, res) => {
+router.delete('/typesDocument/:id',auth.authenticateToken,  async (req, res) => {
     const typeDocumentDelete = await orm.tipo_documentos.delete({
         where:{
             id: parseInt(req.params.id)
@@ -37,7 +38,7 @@ router.delete('/typesDocument/:id', async (req, res) => {
     return res.json(typeDocumentDelete)
 });
 
-router.put('/typesDocument/:id', async (req, res) => {
+router.put('/typesDocument/:id',auth.authenticateToken,  async (req, res) => {
     const typeDocumentUpdate = await orm.tipo_documentos.update({
         where:{
             id: parseInt(req.params.id)
@@ -49,7 +50,7 @@ router.put('/typesDocument/:id', async (req, res) => {
     return res.json(typeDocumentUpdate)
 });
 
-router.post('/typesDocument', async (req, res) => {
+router.post('/typesDocument',auth.authenticateToken,  async (req, res) => {
     const newTypeDocument = await orm.tipo_documentos.create({
         data: req.body
     })
