@@ -1,15 +1,12 @@
 import jwt from 'jsonwebtoken';
-// Secreto para firmar el token. Deberías cambiarlo en un entorno de producción.
-const secretKey = 'your-secret-key';
+const secretKey = process.env.SECRET_KEY;
 
 // Función para generar un token JWT
 function generateToken(payload) {
-  return jwt.sign(payload, secretKey, { expiresIn: '48h' }); // Cambia la duración según tus necesidades
+  return jwt.sign(payload, secretKey, { expiresIn: '48h' });
 }
 
-// Middleware de autenticación
 function authenticateToken(req, res, next) {
-  // Obtén el token del encabezado de la solicitud
   const token = req.header('Authorization');
 
   // Verifica si el token existe
@@ -18,10 +15,9 @@ function authenticateToken(req, res, next) {
   }
 
   try {
-    // Verifica el token y obtén la información del usuario
     const decoded = jwt.verify(token, secretKey);
-    req.user = decoded; // Agrega la información del usuario a la solicitud para su posterior uso
-    next(); // Continúa con la ejecución de la solicitud
+    req.user = decoded; // Agrega la información del usuario 
+    next();
   } catch (error) {
     return res.status(401).json({ message: 'Token inválido' });
   }
