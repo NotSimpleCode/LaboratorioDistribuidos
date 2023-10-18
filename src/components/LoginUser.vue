@@ -2,11 +2,11 @@
     <div class="container">
         <div class="form">
             <h1>Iniciar sesión</h1>
-            <input type="email" v-model="email" placeholder="Nombre de usuario">
+            <input type="text" v-model="authStore.nickname" placeholder="Nombre de usuario">
             <div class="password-container"><input class="password-input" :type="isPasswordVisible ? 'text' : 'password'"
-                    v-model="password" placeholder="Contraseña"><i
+                    v-model="authStore.password" placeholder="Contraseña"><i
                     :class="isPasswordVisible ? 'bi bi-eye-slash-fill' : 'bi bi-eye-fill'" @click="showPassword"></i></div>
-            <input class="login-btn" type="button" @click="login" value="Iniciar sesión">
+            <input class="login-btn" type="submit" @click.prevent="login" value="Iniciar sesión">
             <p>¿No tienes una cuenta? <a @click="authStore.toggleForm()">Regístrate</a></p>
         </div>
     </div>
@@ -17,17 +17,14 @@ import { ref } from 'vue';
 import { useAuthStore } from '../store/AuthStore';
 
 const authStore = useAuthStore()
-const email = ref('');
-const password = ref('');
 const isPasswordVisible = ref(false)
 
 const showPassword = () => {
     isPasswordVisible.value = !isPasswordVisible.value
 }
 
-const login = () => {
-    // to do
-
+const login = async () => {
+    await authStore.login()
 };
 
 </script>

@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import RoleService from "../services/RoleService";
+import { useAuthStore } from "./AuthStore";
 
 export const useRoleStore = defineStore('roles', {
     state: () => ({
@@ -7,8 +8,13 @@ export const useRoleStore = defineStore('roles', {
         filteredRoles: []
     }),
     actions: {
+        getToken() {
+            const authStore = useAuthStore()
+            return authStore.token
+        },
+
         async fetchRoles() {
-            this.roles = await RoleService.fetchAll();
+            this.roles = await RoleService.fetchAll(this.getToken());
             this.filteredRoles = this.roles
         },
         filterRoles(searchTerm) {

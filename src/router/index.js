@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import MainInfoView from '../views/MainInfoView.vue'
 import LoginRegisterView from '../views/LoginRegisterView.vue'
+import { useAuthStore } from '../store/AuthStore'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -8,21 +9,32 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
-      component: LoginRegisterView
+      component: LoginRegisterView,
+      meta: {
+        authRequired: false
+      }
     },
     {
       path: '/information',
       name: 'information',
-      component: MainInfoView
+      component: MainInfoView,
+      meta: {
+        authRequired: true
+      }
     }
 
-    // path: '/rolls',
-    // name: 'rolls',
-    // route level code-splitting
-    // this generates a separate chunk (About.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    // component: () => import('../components/RolesInfo.vue')
   ]
+})
+
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore()
+  const isAuth = authStore.token
+
+  if ((to.meta.authRequired) && (isAuth == null)) {
+    next('login')
+  } else {
+    next()
+  }
 })
 
 export default router

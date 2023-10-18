@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import UserService from '../services/UserService'
+import { useAuthStore } from '../store/AuthStore'
 
 export const useUserStore = defineStore('user', {
     state: () => ({
@@ -11,12 +12,19 @@ export const useUserStore = defineStore('user', {
         totalUsers: 0,
     }),
     actions: {
+        getToken() {
+            const authStore = useAuthStore()
+            return authStore.token
+        },
+
         async onInit() {
-            await this.fetchTotalUsers();
-            this.calculateTotalPages()
+            if (this.getToken()) {
+                await this.fetchTotalUsers();
+                this.calculateTotalPages()
+            }
         },
         async fetchUsers() {
-            this.users = await UserService.fetchAll();
+            this.users = await UserService.fetchAll(this.getToken());
             this.filteredUsers = this.users
         },
         filterUsers(searchTerm) {
@@ -26,13 +34,13 @@ export const useUserStore = defineStore('user', {
             });
         },
         async fetchPage() {
-            this.users = await UserService.fetchPage(this.currentPage);
+            this.users = await UserService.fetchPage(this.currentPage, this.getToken());
         },
         getUserDetails(userId) {
             return this.users.find(user => user.documento_usuario === userId);
         },
         async fetchTotalUsers() {
-            this.totalUsers = await UserService.fetchCount()
+            this.totalUsers = await UserService.fetchCount(this.getToken())
         },
         calculateTotalPages() {
             this.totalPages = Math.ceil(this.totalUsers / this.usersPerPage);

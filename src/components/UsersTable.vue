@@ -21,8 +21,6 @@
                 <div class="user-cell">Fecha de Registro</div>
                 <div class="user-cell">Estado</div>
                 <div class="user-cell">Dirección</div>
-                <!-- <div class="user-cell">Fecha de Nacimiento</div> -->
-                <div class="user-cell">Rol</div>
             </div>
             <div v-for="user in filteredUsers " :key="user" class="user-row row"
                 @click="showUserDetails(user.documento_usuario)">
@@ -57,22 +55,19 @@
                     :title="user.direccion_usuario">
                     {{ user.direccion_usuario ||
                         noDataValue }}</div>
-                <!-- <div :class="{ 'user-cell': true, 'user-cell-empty': !user.fecha_nacimiento_usuario }">{{
-                getDate(user.fecha_nacimiento_usuario) }}</div> -->
-                <!-- Cambiar por los datos de Roles -->
-                <div :class="{ 'user-cell': true }">Empleado</div>
+
             </div>
             <UserDetails v-if="showDetails" :user-id="selectedUserId" :show="showDetails" @close="closeUserDetails" />
         </div>
         <div class="pagination">
-            <label>{{ getActualInfo() }}</label>
+            <label>{{ getActualRange() }}</label>
             <div>
                 <button @click="fastBackward()" :disabled="currentPage.valueOf === 1" class="nav-button"><i
                         class="bi bi-chevron-double-left"></i></button>
                 <button @click="previousPage" :disabled="userStore.currentPage === 1" class="nav-button"><i
                         class="bi bi-chevron-left"></i></button>
                 <button v-for="page in visiblePages" :key="page" @click="changePage(page)"
-                    :class="{ 'page-button': true, 'current-page': page === userStore.currentPage }" class="">
+                    :class="{ 'page-button': true, 'current-page': page === userStore.currentPage }">
                     {{ page }}
                 </button>
                 <button @click="nextPage" :disabled="userStore.currentPage === userStore.totalPages" class="nav-button"><i
@@ -117,7 +112,7 @@ const getDate = (time) => {
 const filteredUsers = computed(() => {
 
     if (searchTerm.value.trim() === '') {
-        return userStore.users;
+        return userStore.users
     } else {
         return userStore.filteredUsers;
     }
@@ -127,7 +122,7 @@ const filterUsers = async () => {
     const term = searchTerm.value.trim().toLowerCase();
 
     if (term === '') {
-        userStore.fetchUsers();
+        userStore.fetchPage();
     } else {
         userStore.filterUsers(term);
     }
@@ -177,7 +172,7 @@ const visiblePages = computed(() => {
 })
 
 
-const getActualInfo = () => {
+const getActualRange = () => {
     const start = (currentPage.value * userStore.usersPerPage) - userStore.usersPerPage + 1;
     const end = currentPage.value * userStore.usersPerPage;
     return `${start}-${end} de ${userStore.totalUsers}`;
@@ -204,7 +199,6 @@ onBeforeMount(() => {
     userStore.onInit()
 })
 
-fetchData();
 </script>
   
 <style scoped>
@@ -294,7 +288,7 @@ fetchData();
 
 .row {
     display: grid;
-    grid-template-columns: .5fr 1fr 1fr 1fr 1fr 1fr .5fr 1fr 1fr;
+    grid-template-columns: .5fr 1fr 1fr 1fr 1fr 1fr .5fr 1fr;
     border-radius: 5px;
     background-color: var(--primary-color);
     padding: 5px;
@@ -387,7 +381,6 @@ fetchData();
     background-color: var(--primary-color);
     color: var(--secondary-color);
     border-radius: 5px;
-
     border: 1px solid lightgray;
     margin: 0px 3px;
 }

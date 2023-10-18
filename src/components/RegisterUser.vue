@@ -2,18 +2,17 @@
     <div class="container">
         <div v-if="!isDataFill" class="register-form">
             <h1>Registro de Usuario</h1>
-            <input type="text" v-model="userName" placeholder="Nombre" />
-            <input type="text" v-model="userLastname" placeholder="Apellido" />
-            <input type="text" v-model="userDocument" placeholder="Documento de usuario" />
-            <select>
-                <option selected="true" disabled="disabled">Tipo Documento</option>
-                <option v-for="doc in documentType" :key="doc.id_tipo_documento" :value="doc.tipo_documento">
+            <input type="text" v-model="newUser.userName" placeholder="Nombre" />
+            <input type="text" v-model="newUser.lastname" placeholder="Apellido" />
+            <input type="text" v-model="newUser.document" placeholder="Documento de usuario" />
+            <select v-model="newUser.documentType">
+                <option v-for="doc in documentType" :key="doc.id_tipo_documento" :value="doc.id_tipo_documento">
                     {{ doc.tipo_documento }}
                 </option>
             </select>
-            <input type="text" v-model="userCellphone" placeholder="Celular" />
-            <input type="text" v-model="userAddress" placeholder="Dirección" />
-            <input type="date" v-model="userBirthdate" placeholder="Fecha de Nacimiento" />
+            <input type="text" v-model="newUser.cellphone" placeholder="Celular" />
+            <input type="text" v-model="newUser.address" placeholder="Dirección" />
+            <input type="date" v-model="newUser.birthdate" placeholder="Fecha de Nacimiento" />
             <input type="button" @click="changeRegister" class="next-register-btn" value="Siguiente" />
             <p>¿Ya tienes una cuenta? <a @click="authStore.toggleForm()">Iniciar sesión</a></p>
         </div>
@@ -28,12 +27,11 @@
                 </label>
                 <input type="file" id="fileInput" accept="image/*" @change="handleFileUpload" style="display: none" />
             </div>
-            <input class="user-name-register" type="text" v-model="userAccountName" placeholder="Nombre de usuario" />
+            <input class="user-name-register" type="text" v-model="connection.nickname" placeholder="Nombre de usuario" />
             <div class="password-container"><input class="password-input" :type="isPasswordVisible ? 'text' : 'password'"
-                    v-model="password" placeholder="Contraseña"><i
+                    v-model="connection.password" placeholder="Contraseña"><i
                     :class="isPasswordVisible ? 'bi bi-eye-slash-fill' : 'bi bi-eye-fill'" @click="showPassword"></i></div>
-            <input type="button" @click="changeRegister" class="register-btn register-credentials-btn"
-                value="Registrarse" />
+            <input type="button" @click="register" class="register-btn register-credentials-btn" value="Registrarse" />
             <input type="button" @click="changeRegister" class="register-btn back-btn" value="Volver" />
             <input type="button" @click="authStore.toggleForm" class="register-btn" value="Cancelar" />
         </div>
@@ -41,7 +39,7 @@
 </template>
   
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import DocTypeService from '../services/DocTypeService';
 import { useAuthStore } from '../store/AuthStore';
 
@@ -49,15 +47,49 @@ const authStore = useAuthStore()
 const isDataFill = ref(false)
 const imageUrl = ref('src/assets/user.svg')
 const isPasswordVisible = ref(false)
-const userName = ref('');
-const userLastname = ref('');
-const userDocument = ref('');
+// const userName = ref('');
+// const userLastname = ref('');
+// const userDocument = ref('');
 const documentType = ref();
-const userCellphone = ref('');
-const userAddress = ref('');
-const userBirthdate = ref('');
-const userAccountName = ref('')
-const password = ref('')
+// const userCellphone = ref('');
+// const userAddress = ref('');
+// const userBirthdate = ref('');
+// const userAccountName = ref('')
+// const password = ref('')
+
+const newUser = ref({
+    document: null,
+    documentType: 1,
+    name: null,
+    lastname: null,
+    cellphone: null,
+    regDate: null,
+    state: null,
+    address: null,
+    birthdate: null,
+    photo: null
+});
+
+const connection = ref({
+    idUser: newUser.value.document,
+    idRol: 3,
+    nickname: null,
+    password: null
+})
+
+const register = () => {
+    registerUser();
+    registerConnection();
+}
+
+const registerUser = () => {
+    authStore.registerUser(newUser)
+}
+
+const registerConnection = () => {
+    authStore.registerConnection(connection)
+}
+
 
 const changeRegister = () => {
     isDataFill.value = !isDataFill.value
@@ -68,27 +100,25 @@ const showPassword = () => {
 }
 
 function openFileInput() {
-    // Al hacer clic en el cuadro de vista previa, activamos el input de archivo
     document.getElementById('fileInput').click();
 }
 
 function handleFileUpload(event) {
-    const file = event.target.files[0]; // Obtén el archivo seleccionado
+    const file = event.target.files[0];
     if (file) {
-        imageUrl.value = URL.createObjectURL(file); // Crea una URL de objeto para la vista previa
+        newUser.value.photo = file
+        imageUrl.value = URL.createObjectURL(file); // Se crea una URL de objeto para la vista previa
     }
 }
 const fetchAllDocTypes = async () => {
+
     documentType.value = await DocTypeService.fetchAll()
     console.log(documentType.value)
 }
 
-const register = () => {
-    // to do
-};
-
-
-fetchAllDocTypes()
+onMounted(() => {
+    fetchAllDocTypes()
+})
 </script>
   
 <style scoped>

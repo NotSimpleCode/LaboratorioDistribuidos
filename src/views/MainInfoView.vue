@@ -7,14 +7,15 @@
         <RolesTable v-else-if="tableStore.activeSubMenu === 'roles'"></RolesTable>
     </main>
 </template>
-
 <script setup>
 import AppHeader from '../components/AppHeader.vue';
 import TablesNav from '../components/TablesNav.vue';
 import UsersTable from '../components/UsersTable.vue';
 import RolesTable from '../components/RolesTable.vue';
 import { useTableStore } from '../store/TableStore'
+
 const tableStore = useTableStore()
+
 </script>
 
 <style scoped>
@@ -39,9 +40,4 @@ const tableStore = useTableStore()
     grid-row: 2/-1;
     grid-column: 1;
 }
-
-.table {
-    grid-row: 2/-1;
-    grid-column: 2/3;
-}
-</style>
+</style>    

@@ -4,6 +4,9 @@ class UserService extends CrudService {
     constructor() {
         super('users')
     }
+
+
+
 }
 
 export default new UserService();

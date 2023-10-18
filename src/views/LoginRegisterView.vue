@@ -9,7 +9,6 @@
 </template>
   
 <script setup>
-import { ref } from 'vue';
 import LoginUser from '../components/LoginUser.vue'
 import RegisterUser from '../components/RegisterUser.vue'
 import { useAuthStore } from '../store/AuthStore';
