@@ -7,6 +7,21 @@ const router = Router();
 const elementosPorPagin = 10; // Cambia esto según tus necesidades
 const paginaPredeterminada = 1; // Página inicial
 
+router.get('/connection/count', async (req, res) => {
+    try {
+        const number = await orm.usuarios_roles.count({})
+        if (number!=0) {
+            res.status(200).json(number)
+        }else{
+            res.status(204).json({ info: "Not content" })
+        }
+    } catch (error) {
+        console.error("Error counting users:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+
 router.get('/connection', async (req, res) => {
     try {
         const { pagina = paginaPredeterminada, elementos = elementosPorPagin } = req.query;
