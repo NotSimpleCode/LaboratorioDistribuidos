@@ -62,7 +62,7 @@ router.post('/upload/:documento_usuario', uploadStrategy, async (req, res) => {
   });
   
 
-const elementosPorPagin = 10; // Cambia esto según tus necesidades
+const elementosPorPagin = 20; // Cambia esto según tus necesidades
 const paginaPredeterminada = 1; // Página inicial
 
 router.get('/users/count',auth.authenticateToken, async (req, res) => {

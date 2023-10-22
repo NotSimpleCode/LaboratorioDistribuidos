@@ -36,6 +36,9 @@ router.get('/connection',auth.authenticateToken, async (req, res) => {
         const connections = await orm.usuarios_roles.findMany({
             skip: startIndex,
             take: elementosPorPagina,
+            include:{
+                roles:true
+            }
         });
 
         if (connections.length !=0) {
@@ -125,7 +128,7 @@ router.put('/connection/:id', auth.authenticateToken,async (req, res) => {
 });
    
 
-//registro
+//registro de conexion
 router.post('/connection', async (req, res) => {
     try {
         const {id_usuario, id_rol, nick_usuario, password_usuario } = req.body;
@@ -179,11 +182,11 @@ router.post('/connection/admin', async (req, res) => {
 
 router.post('/login',async (req, res) => {
     try {
-        const { nick_usuario, password_usuario } = req.body;
+        const { nombre_usuario, password_usuario } = req.body;
 
         const logueo = await orm.usuarios_roles.findFirst({
             where: {
-                nick_usuario: nick_usuario
+                nick_usuario: nombre_usuario
             }
         });
         if (logueo ===null) {

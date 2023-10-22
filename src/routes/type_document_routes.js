@@ -4,7 +4,7 @@ import * as auth from '../authToken.js';
 
 const router = Router();
 
-router.get('/typesDocument',auth.authenticateToken, async (req, res) => {
+router.get('/typesDocument', async (req, res) => {
     const tipo_documentos = await orm.tipo_documentos.findMany({})
     res.json(tipo_documentos)
 });

@@ -75,7 +75,7 @@ router.delete('/roles/:id',auth.authenticateToken,async (req, res) => {
 
 router.put('/roles/:id',auth.authenticateToken, async (req, res) => {
     try {
-        const RolUpdate = await orm.roles_roles.update({
+        const RolUpdate = await orm.roles.update({
             where: {
                 id_rol: parseInt(req.params.id)
             },
