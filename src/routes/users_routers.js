@@ -1,5 +1,5 @@
 import { Router } from "express";
-import {orm} from "../db.js"
+import { orm } from "../db.js"
 import * as auth from '../authToken.js';
 
 import multer from 'multer';
@@ -7,70 +7,70 @@ import azureStorage from 'azure-storage';
 import getStream from 'into-stream';
 
 const inMemoryStorage = multer.memoryStorage();
-const uploadStrategy = multer({storage: inMemoryStorage}).single('image');
+const uploadStrategy = multer({ storage: inMemoryStorage }).single('image');
 const blobService = azureStorage.createBlobService();
 const containerName = 'imagenes';
 
 const getBlobName = originalName => {
     const identifier = Math.random().toString().replace(/0\./, '');
     return `${identifier}-${originalName}`;
-};   
+};
 
 const router = Router();
 
 router.post('/upload/:documento_usuario', uploadStrategy, async (req, res) => {
     try {
-      if (!req.file) {
-        return res.status(400).json({ error: 'No file uploaded' });
-      }
-  
-      const blobName = getBlobName(req.file.originalname);
-      const stream = getStream(req.file.buffer);
-  
-      // Sube la imagen al contenedor en Azure Blob Storage
-      blobService.createBlockBlobFromStream(containerName, blobName, stream, req.file.size, async (error, result, response) => {
-        if (error) {
-          console.error('Error uploading image to Azure Blob Storage:', error);
-          return res.status(500).json({ error: 'Internal server error' });
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
         }
-  
-        // URL de acceso a la imagen recién cargada
-        const imageUrl = blobService.getUrl(containerName, blobName);
-        const userId = parseInt(req.params.documento_usuario);
-        try {
-          const updatedUser = await orm.usuarios.update({
-            where: { documento_usuario: userId },
-            data: {
-              foto_usuario: imageUrl
+
+        const blobName = getBlobName(req.file.originalname);
+        const stream = getStream(req.file.buffer);
+
+        // Sube la imagen al contenedor en Azure Blob Storage
+        blobService.createBlockBlobFromStream(containerName, blobName, stream, req.file.size, async (error, result, response) => {
+            if (error) {
+                console.error('Error uploading image to Azure Blob Storage:', error);
+                return res.status(500).json({ error: 'Internal server error' });
             }
-          });
-  
-          if (updatedUser) {
-            res.status(200).json({ Message: 'Imagen subida con éxito' });
-          } else {
-            res.status(404).json({ error: 'User not found' });
-          }
-        } catch (updateError) {
-          console.error('Error updating user:', updateError);
-          res.status(500).json({ error: 'Internal server error' });
-        }
-      });
+
+            // URL de acceso a la imagen recién cargada
+            const imageUrl = blobService.getUrl(containerName, blobName);
+            const userId = parseInt(req.params.documento_usuario);
+            try {
+                const updatedUser = await orm.usuarios.update({
+                    where: { documento_usuario: userId },
+                    data: {
+                        foto_usuario: imageUrl
+                    }
+                });
+
+                if (updatedUser) {
+                    res.status(200).json({ Message: 'Imagen subida con éxito' });
+                } else {
+                    res.status(404).json({ error: 'User not found' });
+                }
+            } catch (updateError) {
+                console.error('Error updating user:', updateError);
+                res.status(500).json({ error: 'Internal server error' });
+            }
+        });
     } catch (error) {
-      console.error('Error uploading image:', error);
-      res.status(500).json({ error: 'Internal server error' });
+        console.error('Error uploading image:', error);
+        res.status(500).json({ error: 'Internal server error' });
     }
-  });
-  
+});
+
 
 const elementosPorPagin = 20; // Cambia esto según tus necesidades
 const paginaPredeterminada = 1; // Página inicial
 
-router.get('/users/count',auth.authenticateToken, async (req, res) => {
+router.get('/users/count', auth.authenticateToken, async (req, res) => {
     try {
         const number = await orm.usuarios.count({})
-        if (number!=0) {
+        if (number != 0) {
             res.status(200).json(number)
-        }else{
+        } else {
             res.status(204).json({ info: "Not content" })
         }
     } catch (error) {
@@ -81,7 +81,7 @@ router.get('/users/count',auth.authenticateToken, async (req, res) => {
 
 
 
-router.get('/users',auth.authenticateToken, async (req, res) => {
+router.get('/users', auth.authenticateToken, async (req, res) => {
     try {
         const { pagina = paginaPredeterminada, elementos = elementosPorPagin } = req.query;
         const paginaActual = parseInt(pagina);
@@ -99,9 +99,9 @@ router.get('/users',auth.authenticateToken, async (req, res) => {
             }
         });
 
-        if (users.length !=0) {
+        if (users.length != 0) {
             res.json(users);
-        }else{
+        } else {
 
             // Envía la respuesta con los elementos de la página actual
             res.status(204).json({ info: "Not content" });
@@ -112,13 +112,13 @@ router.get('/users',auth.authenticateToken, async (req, res) => {
     }
 });
 
-router.get('/users/id/:id',auth.authenticateToken, async (req, res) => {
+router.get('/users/id/:id', auth.authenticateToken, async (req, res) => {
     try {
-        
+
         const foundUser = await orm.usuarios.findFirst({
             where: {
                 documento_usuario: parseInt(req.params.id)
-                
+
             },
             include: {
                 tipo_documentos: true
@@ -137,20 +137,20 @@ router.get('/users/id/:id',auth.authenticateToken, async (req, res) => {
 });
 
 
-router.get('/users/:value',auth.authenticateToken, async (req, res) => {
+router.get('/users/:value', auth.authenticateToken, async (req, res) => {
     try {
         const val = req.params.value
         const foundUser = await orm.usuarios.findFirst({
             where: {
-                OR:[
+                OR: [
                     {
-                        nombre_usuario:val
+                        nombre_usuario: val
                     },
                     {
-                        apellido_usuario:val
+                        apellido_usuario: val
                     }
                 ]
-                
+
             },
             include: {
                 tipo_documentos: true
@@ -168,7 +168,7 @@ router.get('/users/:value',auth.authenticateToken, async (req, res) => {
     }
 });
 
-router.delete('/users/:id',auth.authenticateToken, async (req, res) => {
+router.delete('/users/:id', auth.authenticateToken, async (req, res) => {
     try {
 
         // Elimina el usuario por su ID_PERSONA y el ID_ROL proporcionado en la ruta
@@ -193,7 +193,7 @@ router.delete('/users/:id',auth.authenticateToken, async (req, res) => {
 
 
 
-router.put('/users/:id',auth.authenticateToken, async (req, res) => {
+router.put('/users/:id', auth.authenticateToken, async (req, res) => {
     try {
         const UserUpdate = await orm.usuarios_roles.update({
             where: {
@@ -204,7 +204,7 @@ router.put('/users/:id',auth.authenticateToken, async (req, res) => {
 
         if (UserUpdate === null) {
             res.status(404).json({ error: "User not found" });
-        }else{
+        } else {
             res.json({ info: "User updated successfully" });
         }
 
@@ -214,13 +214,13 @@ router.put('/users/:id',auth.authenticateToken, async (req, res) => {
     }
 });
 
-router.post('/users',auth.authenticateToken, async (req, res) => {
+router.post('/users', auth.authenticateToken, async (req, res) => {
     try {
-       
+
         const newConnection = await orm.usuarios.create({
             data: req.body
         });
-        
+
         res.status(200).json({ info: "User created!" });
     } catch (error) {
         console.error("Error creating user:", error);
@@ -228,34 +228,48 @@ router.post('/users',auth.authenticateToken, async (req, res) => {
     }
 });
 
-router.patch('/users/:document',auth.authenticateToken, async (req, res) => {
-    const { name } = req.body; 
+router.post('/users/post', async (req, res) => {
+    try {
+
+        const newConnection = await orm.usuarios.create({
+            data: req.body
+        });
+
+        res.status(200).json({ info: "User created!" });
+    } catch (error) {
+        console.error("Error creating user:", error);
+        return res.status(400).json({ error: "User could not be created." });
+    }
+});
+
+router.patch('/users/:document', auth.authenticateToken, async (req, res) => {
+    const { name } = req.body;
     const nameUser = await orm.usuarios.update({
         where: {
             document: parseInt(req.params.document)
         },
         data: {
-            name: name 
+            name: name
         }
     })
     if (!nameUser)
         return res.status(404).json({ error: "User not found" })
-    return res.status(200).json({message:"Modified successfully"})
+    return res.status(200).json({ message: "Modified successfully" })
 });
 
-router.patch('/users/:id',auth.authenticateToken, async (req, res) => {
-    const { foto_usuario } = req.body; 
+router.patch('/users/:id', auth.authenticateToken, async (req, res) => {
+    const { foto_usuario } = req.body;
     const fotoUser = await orm.usuarios.update({
         where: {
             documento_usuario: parseInt(req.params.id)
         },
         data: {
-            foto_usuario:foto_usuario
+            foto_usuario: foto_usuario
         }
     })
     if (!fotoUser)
         return res.status(404).json({ error: "User not found" })
-    return res.status(200).json({message:"Picture Modified successfully"})
+    return res.status(200).json({ message: "Picture Modified successfully" })
 });
 
 

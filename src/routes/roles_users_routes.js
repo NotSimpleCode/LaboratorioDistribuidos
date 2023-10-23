@@ -1,19 +1,19 @@
 import { Router } from "express";
-import {orm} from "../db.js"
+import { orm } from "../db.js"
 import bcrypt from 'bcrypt';
 import * as auth from '../authToken.js';
 
 const router = Router();
 
-const elementosPorPagin = 10; // Cambia esto según tus necesidades
+const elementosPorPagin = 20; // Cambia esto según tus necesidades
 const paginaPredeterminada = 1; // Página inicial
 
-router.get('/connection/count',auth.authenticateToken,async (req, res) => {
+router.get('/connection/count', auth.authenticateToken, async (req, res) => {
     try {
         const number = await orm.usuarios_roles.count({})
-        if (number!=0) {
+        if (number != 0) {
             res.status(200).json(number)
-        }else{
+        } else {
             res.status(204).json({ info: "Not content" })
         }
     } catch (error) {
@@ -23,7 +23,7 @@ router.get('/connection/count',auth.authenticateToken,async (req, res) => {
 });
 
 
-router.get('/connection',auth.authenticateToken, async (req, res) => {
+router.get('/connection', auth.authenticateToken, async (req, res) => {
     try {
         const { pagina = paginaPredeterminada, elementos = elementosPorPagin } = req.query;
         const paginaActual = parseInt(pagina);
@@ -36,18 +36,18 @@ router.get('/connection',auth.authenticateToken, async (req, res) => {
         const connections = await orm.usuarios_roles.findMany({
             skip: startIndex,
             take: elementosPorPagina,
-            include:{
-                roles:true
+            include: {
+                roles: true
             }
         });
 
-        if (connections.length !=0) {
+        if (connections.length != 0) {
             res.json(connections);
-        }else{
+        } else {
             // Envía la respuesta con los elementos de la página actual
             res.status(204).json({ info: "Not content" });
         }
-        
+
     } catch (error) {
         console.error("Error fetching connections:", error);
         res.status(500).json({ error: "Internal server error" });
@@ -57,11 +57,14 @@ router.get('/connection',auth.authenticateToken, async (req, res) => {
 
 
 
-router.get('/connection/:id',auth.authenticateToken, async (req, res) => {
+router.get('/connection/:id', auth.authenticateToken, async (req, res) => {
     try {
         const connectionFound = await orm.usuarios_roles.findFirst({
             where: {
                 id_usuario: parseInt(req.params.id)
+            },
+            include: {
+                roles: true
             }
         });
 
@@ -76,10 +79,53 @@ router.get('/connection/:id',auth.authenticateToken, async (req, res) => {
     }
 });
 
-router.delete('/connection/:id/:id_rol',auth.authenticateToken, async (req, res) => {
+router.get('/connection/nickname/:nickname', auth.authenticateToken, async (req, res) => {
+    try {
+        const connectionFound = await orm.usuarios_roles.findFirst({
+            where: {
+                nick_usuario: req.params.nickname
+            },
+            include: {
+                roles: true,
+                usuarios: true
+            }
+        });
+
+        if (!connectionFound) {
+            return res.status(404).json({ error: "Connection not found" });
+        }
+
+        res.json(connectionFound);
+    } catch (error) {
+        console.error("Error fetching connection:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+router.get('/connection/exists/:nickname', async (req, res) => {
+    try {
+        const existingUser = await orm.usuarios_roles.findFirst({
+            where: {
+                nick_usuario: req.params.nickname,
+            },
+        });
+
+        if (existingUser) {
+            // Si se encuentra un usuario con el mismo nickname, significa que ya está registrado
+            res.json({ exists: true });
+        } else {
+            // Si no se encuentra un usuario con el mismo nickname, está disponible
+            res.json({ exists: false });
+        }
+    } catch (error) {
+        console.error('Error al comprobar el nickname:', error);
+        res.status(500).json({ error: 'Error del servidor' });
+    }
+});
+router.delete('/connection/:id/:id_rol', auth.authenticateToken, async (req, res) => {
     try {
         const usuarioID = parseInt(req.params.id);
-        
+
         const idRol = parseInt(req.params.id_rol);
 
         // Elimina el usuario por su ID_PERSONA y el ID_ROL proporcionado en la ruta
@@ -103,11 +149,7 @@ router.delete('/connection/:id/:id_rol',auth.authenticateToken, async (req, res)
     }
 });
 
-
-
-
-
-router.put('/connection/:id', auth.authenticateToken,async (req, res) => {
+router.put('/connection/:id', auth.authenticateToken, async (req, res) => {
     try {
         const connectionUpdate = await orm.usuarios_roles.update({
             where: {
@@ -126,12 +168,12 @@ router.put('/connection/:id', auth.authenticateToken,async (req, res) => {
         return res.status(500).json({ error: "Internal server error" });
     }
 });
-   
+
 
 //registro de conexion
-router.post('/connection', async (req, res) => {
+router.post('/connection', auth.authenticateToken, async (req, res) => {
     try {
-        const {id_usuario, id_rol, nick_usuario, password_usuario } = req.body;
+        const { id_usuario, id_rol, nick_usuario, password_usuario } = req.body;
 
         // Genera un hash de la contraseña
         const hashedPassword = await bcrypt.hash(password_usuario, 10); // "10" es el costo de la encriptación
@@ -145,7 +187,31 @@ router.post('/connection', async (req, res) => {
                 password_usuario: hashedPassword// Almacena el hash en la base de datos
             }
         });
-        
+
+        res.status(200).json({ info: "Connection created!" });
+    } catch (error) {
+        console.error("Error creating connection:", error);
+        return res.status(400).json({ error: "User connection could not be created." });
+    }
+});
+
+router.post('/connection/post', async (req, res) => {
+    try {
+        const { id_usuario, id_rol, nick_usuario, password_usuario } = req.body;
+
+        // Genera un hash de la contraseña
+        const hashedPassword = await bcrypt.hash(password_usuario, 10); // "10" es el costo de la encriptación
+
+        // Crea un nuevo usuario con la contraseña encriptada
+        const newConnection = await orm.usuarios_roles.create({
+            data: {
+                id_usuario,
+                id_rol,
+                nick_usuario,
+                password_usuario: hashedPassword// Almacena el hash en la base de datos
+            }
+        });
+
         res.status(200).json({ info: "Connection created!" });
     } catch (error) {
         console.error("Error creating connection:", error);
@@ -155,7 +221,7 @@ router.post('/connection', async (req, res) => {
 
 router.post('/connection/admin', async (req, res) => {
     try {
-        const {id_usuario, id_rol, nick_usuario, password_usuario } = req.body;
+        const { id_usuario, id_rol, nick_usuario, password_usuario } = req.body;
 
         // Genera un hash de la contraseña
         const hashedPassword = await bcrypt.hash(password_usuario, 10); // "10" es el costo de la encriptación
@@ -169,7 +235,7 @@ router.post('/connection/admin', async (req, res) => {
                 password_usuario: hashedPassword// Almacena el hash en la base de datos
             }
         });
-        
+
         res.status(200).json({ info: "Connection created!" });
     } catch (error) {
         console.error("Error creating connection:", error);
@@ -180,30 +246,35 @@ router.post('/connection/admin', async (req, res) => {
 
 //LOGIN
 
-router.post('/login',async (req, res) => {
+router.post('/login', async (req, res) => {
     try {
         const { nombre_usuario, password_usuario } = req.body;
 
         const logueo = await orm.usuarios_roles.findFirst({
             where: {
-                nick_usuario: nombre_usuario
+                nick_usuario: nombre_usuario,
             }
+
         });
-        if (logueo ===null) {
+        if (logueo === null) {
             res.status(404).json({ error: "Username not found" });
         } else {
-            // Compara el hash de la contraseña ingresada con el hash almacenado
-            const passwordMatch = await bcrypt.compare(password_usuario, logueo.password_usuario);
+            if (nombre_usuario === logueo.nick_usuario) {//Validar mayusculas y minusculas
+                // Compara el hash de la contraseña ingresada con el hash almacenado
+                const passwordMatch = await bcrypt.compare(password_usuario, logueo.password_usuario);
 
-            if (passwordMatch) {
-                //aqui token
-                const token = auth.generateToken({
-                    nick_usuario: logueo.nick_usuario,
-                    password_usuario: logueo.password_usuario
-                })
-                res.status(200).json({status:true,info:"Login Successfully",token:token});
+                if (passwordMatch) {
+                    //aqui token
+                    const token = auth.generateToken({
+                        nick_usuario: logueo.nick_usuario,
+                        password_usuario: logueo.password_usuario
+                    })
+                    res.status(200).json({ status: true, info: "Login Successfully", token: token });
+                } else {
+                    res.status(401).json({ status: false, error: "Incorrect password" });
+                }
             } else {
-                res.status(401).json({status:false ,error: "Incorrect password" });
+                res.status(401).json({ status: false, error: "Incorrect user" });
             }
         }
     } catch (error) {
