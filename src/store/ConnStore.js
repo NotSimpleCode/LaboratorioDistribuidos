@@ -33,6 +33,12 @@ export const useConnectionStore = defineStore('conn', {
         async fetchPage() {
             this.connections = await ConnectionService.fetchPage(this.currentPage, this.getToken());
         },
+        async fetchByUserId(userId) {
+            return await ConnectionService.fetchByUserId(userId)
+        },
+        async fetchByUserNickname(nickname) {
+            return await ConnectionService.fetchByUserNickname(nickname)
+        },
         async fetchTotalConnections() {
             this.totalConn = await ConnectionService.fetchCount(this.getToken())
         },

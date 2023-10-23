@@ -8,11 +8,20 @@ export const useAuthStore = defineStore('auth', {
     state: () => ({
         showLogin: true,
         token: null,
-        nickname: null,
-        password: null
+        onlineUser: { nick: null, rol: null, foto: null },
+        password: null,
     }),
 
     actions: {
+        async updateOnlineUser() {
+            const user = await ConnectionService.fetchByUserNickname(this.onlineUser.nick, this.token)
+            this.onlineUser = {
+                nick: user.nick_usuario,
+                rol: user.roles.nombre_rol,
+                foto: user.usuarios.foto_usuario
+            };
+            // localStorage.setItem('user', JSON.stringify(this.onlineUser))
+        },
         setRegTime() {
             return new Date().toISOString();
         },
@@ -22,27 +31,32 @@ export const useAuthStore = defineStore('auth', {
 
         async login() {
             try {
-                const response = await LoginService.login({ nombre_usuario: this.nickname, password_usuario: this.password });
+                const response = await LoginService.login({ nombre_usuario: this.onlineUser.nick, password_usuario: this.password });
                 if (response.status) {
-                    console.log(response.token);
-                    this.token = response.token;
+                    this.token = response.token
+                    await this.updateOnlineUser()
                     router.push({ name: 'information' });
-                } else {
-                    this.token = null;
                 }
             } catch (error) {
                 alert('Credenciales incorrectas. Por favor, inténtalo de nuevo.');
             }
         },
 
+        async existsNickname(userNickname) {
+            const user = await ConnectionService.fetchValidationNickname(userNickname)
+            return user.exists
+        },
 
         async registerUser(newUser) {
-            const response = await UserService.postData(newUser)
-            const data = await response.json()
+            console.log("nuevo ", newUser);
+            const response = await UserService.postRegisterUser(newUser)
+            console.log("registrado ", response)
         },
         async registerConnection(connection) {
-            const response = await ConnectionService.postData(connection)
-            const data = await response.json()
+            console.log("nuevo conn", connection);
+            const response = await ConnectionService.postRegisterConnection(connection, this.token)
+            console.log("registrado conn ", response)
+
         }
     },
 });

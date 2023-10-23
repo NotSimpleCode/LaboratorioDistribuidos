@@ -2,9 +2,9 @@
     <div class="container">
         <div class="form">
             <h1>Iniciar sesión</h1>
-            <input type="text" v-model="authStore.nickname" placeholder="Nombre de usuario">
+            <input type="text" v-model="authStore.onlineUser.nick" placeholder="Nombre de usuario" @keydown.enter="login">
             <div class="password-container"><input class="password-input" :type="isPasswordVisible ? 'text' : 'password'"
-                    v-model="authStore.password" placeholder="Contraseña"><i
+                    v-model="authStore.password" placeholder="Contraseña" @keydown.enter="login"><i
                     :class="isPasswordVisible ? 'bi bi-eye-slash-fill' : 'bi bi-eye-fill'" @click="showPassword"></i></div>
             <input class="login-btn" type="submit" @click.prevent="login" value="Iniciar sesión">
             <p>¿No tienes una cuenta? <a @click="authStore.toggleForm()">Regístrate</a></p>

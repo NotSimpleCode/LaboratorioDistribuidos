@@ -10,11 +10,19 @@
                 <input class="search_btn" :style="{ backgroundImage: `url(${searchIcon})` }" type="button" @click="buscar">
             </div>
 
-            <div class="user-info">
-                <img class="user-avatar" src="../assets/user.svg" alt="imagen generica" />
+            <div class="user-info" @click="toggleMenu">
+                <img class="user-avatar"
+                    :src="authStore.onlineUser.foto ? authStore.onlineUser.foto : '../src/assets/user.svg'"
+                    alt="imagen de perfil" />
                 <div class="user-details">
-                    <p class="user-name">Diego González</p>
-                    <p class="user-role">Administrador</p>
+                    <p class="user-name">{{ authStore.onlineUser.nick }}</p>
+                    <p class="user-role">{{ authStore.onlineUser.rol }}</p>
+                </div>
+                <div class="user-menu" v-if="isMenuVisible">
+                    <ul>
+                        <li @click="editProfile">Editar perfil</li>
+                        <li @click="logout">Cerrar sesión</li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -23,10 +31,14 @@
   
 <script setup>
 import { ref } from 'vue';
+import { useAuthStore } from '../store/AuthStore'
+import router from '../router'
 
-
+const isMenuVisible = ref(false);
+const authStore = useAuthStore()
 let isFocused = ref(false)
 let searchIcon = ref('../src/assets/search-white.svg')
+
 
 const onSearchFocus = () => {
     isFocused.value = true;
@@ -39,6 +51,18 @@ const onSearchBlur = () => {
 }
 
 const buscar = () => {
+
+}
+
+const toggleMenu = () => {
+    isMenuVisible.value = !isMenuVisible.value;
+}
+
+const editProfile = () => {
+    router.push({ name: 'updateForm' });
+}
+
+const logout = () => {
 
 }
 
@@ -147,6 +171,37 @@ input[type="text"]:focus::placeholder {
     margin-top: 5px;
     font-size: 0.85rem;
     opacity: 0.6;
+}
+
+.user-menu {
+    position: absolute;
+    top: 80%;
+    right: 4%;
+    display: none;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+
+.user-info:hover .user-menu {
+    display: block;
+}
+
+.user-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.user-menu li {
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.user-menu li:hover {
+    background-color: #f1f1f1;
 }
 </style>
   

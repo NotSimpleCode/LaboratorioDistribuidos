@@ -5,7 +5,7 @@ class DocTypeService extends CrudService {
         super('typesDocument')
     }
 
-    async fetchAll() {
+    async fetchAllDocs() {
         try {
             const response = await axios.get(this.url);
             return response.data

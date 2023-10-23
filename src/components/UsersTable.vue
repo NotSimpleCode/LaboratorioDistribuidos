@@ -54,7 +54,7 @@
                     :title="user.direccion_usuario">
                     {{ user.direccion_usuario ||
                         noDataValue }}</div>
-
+                <i @click="changeState(user)" class="bi bi-person-x"></i>
             </div>
             <UserDetails v-if="showDetails" :user-id="selectedUserId" :show="showDetails" @close="closeUserDetails" />
         </div>
@@ -91,6 +91,10 @@ const showDetails = ref(false);
 const selectedUserId = ref(null);
 const currentPage = computed(() => userStore.currentPage);
 const totalPages = computed(() => userStore.totalPages);
+
+const changeState = (user) => {
+
+}
 
 const showUserDetails = (userId) => {
     selectedUserId.value = userId;
@@ -156,6 +160,7 @@ const changePage = async (page) => {
 const fetchData = async () => {
     await userStore.fetchPage();
 };
+
 const visiblePages = computed(() => {
     const pageSize = 10; // Número de elementos por página
 
@@ -196,9 +201,9 @@ const fastForward = () => {
 
 onBeforeMount(() => {
     userStore.onInit()
+    fetchData()
 })
 
-fetchData()
 
 </script>
   
@@ -336,6 +341,18 @@ fetchData()
 
 .user-row {
     cursor: pointer;
+}
+
+.bi-person-x {
+    color: red;
+    cursor: pointer;
+    position: absolute;
+    left: 10%;
+    display: none;
+}
+
+.user-row:hover .bi-person-x {
+    display: inline;
 }
 
 .user-row:hover {

@@ -2,36 +2,39 @@
     <div class="container">
         <div v-if="!isDataFill" class="register-form">
             <h1>Registro de Usuario</h1>
-            <input type="text" v-model="newUser.userName" placeholder="Nombre" />
-            <input type="text" v-model="newUser.lastname" placeholder="Apellido" />
-            <input type="text" v-model="newUser.document" placeholder="Documento de usuario" />
-            <select v-model="newUser.documentType">
+            <input type="text" v-model="newUser.nombre_usuario" placeholder="Nombre *" required />
+            <input type="text" v-model="newUser.apellido_usuario" placeholder="Apellido *" required />
+            <input type="text" v-model="newUser.documento_usuario" placeholder="Documento de usuario *" required />
+            <select v-model="newUser.tipo_documento_usuario">
                 <option v-for="doc in documentType" :key="doc.id_tipo_documento" :value="doc.id_tipo_documento">
                     {{ doc.tipo_documento }}
                 </option>
             </select>
-            <input type="text" v-model="newUser.cellphone" placeholder="Celular" />
-            <input type="text" v-model="newUser.address" placeholder="Dirección" />
-            <input type="date" v-model="newUser.birthdate" placeholder="Fecha de Nacimiento" />
-            <input type="button" @click="changeRegister" class="next-register-btn" value="Siguiente" />
+            <input type="text" v-model="newUser.celular_usuario" placeholder="Celular *" required />
+            <input type="text" v-model="newUser.direccion_usuario" placeholder="Dirección *" required />
+            <input type="date" v-model="newUser.fecha_nacimiento_usuario" placeholder="Fecha de Nacimiento *" required />
+            <input type="button" @click="changeRegister" :disabled="!isPersonalDataComplete()" class="next-register-btn"
+                value="Siguiente" />
             <p>¿Ya tienes una cuenta? <a @click="authStore.toggleForm()">Iniciar sesión</a></p>
         </div>
         <div v-else class="register-credentials-form">
             <h1>Registro de Usuario</h1>
             <div class="image-upload">
-                <label for="fileInput" class="image-preview" @click.prevent="openFileInput"
-                    :style="{ backgroundImage: `url(${imageUrl})` }">
+                <label for="fileInput" class="image-preview" @click.prevent="openFileInput">
                     <div class="overlay">
                         <span>Cargar imagen</span>
                     </div>
                 </label>
                 <input type="file" id="fileInput" accept="image/*" @change="handleFileUpload" style="display: none" />
             </div>
-            <input class="user-name-register" type="text" v-model="connection.nickname" placeholder="Nombre de usuario" />
+            <input class="user-name-register" type="text" v-model="connection.nick_usuario"
+                placeholder="Nombre de usuario *" required />
             <div class="password-container"><input class="password-input" :type="isPasswordVisible ? 'text' : 'password'"
-                    v-model="connection.password" placeholder="Contraseña"><i
-                    :class="isPasswordVisible ? 'bi bi-eye-slash-fill' : 'bi bi-eye-fill'" @click="showPassword"></i></div>
-            <input type="button" @click="register" class="register-btn register-credentials-btn" value="Registrarse" />
+                    v-model="connection.password_usuario" placeholder="Contraseña *" required><i
+                    :class="isPasswordVisible ? 'bi bi-eye-slash-fill' : 'bi bi-eye-fill'" @click="showPassword"></i>
+            </div>
+            <input type="button" @click="register" :disabled="!isDataComplete()"
+                class="register-btn register-credentials-btn" value="Registrarse" />
             <input type="button" @click="changeRegister" class="register-btn back-btn" value="Volver" />
             <input type="button" @click="authStore.toggleForm" class="register-btn" value="Cancelar" />
         </div>
@@ -39,13 +42,13 @@
 </template>
   
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onBeforeMount } from 'vue';
 import DocTypeService from '../services/DocTypeService';
 import { useAuthStore } from '../store/AuthStore';
 
 const authStore = useAuthStore()
 const isDataFill = ref(false)
-const imageUrl = ref('src/assets/user.svg')
+const imageUrl = ref(null)
 const isPasswordVisible = ref(false)
 // const userName = ref('');
 // const userLastname = ref('');
@@ -56,38 +59,72 @@ const documentType = ref();
 // const userBirthdate = ref('');
 // const userAccountName = ref('')
 // const password = ref('')
+console.log(new Date().toISOString());
+const newUser = ref({})
+const connection = ref({})
 
-const newUser = ref({
-    document: null,
-    documentType: 1,
-    name: null,
-    lastname: null,
-    cellphone: null,
-    regDate: null,
-    state: null,
-    address: null,
-    birthdate: null,
-    photo: null
-});
-
-const connection = ref({
-    idUser: newUser.value.document,
-    idRol: 3,
-    nickname: null,
-    password: null
-})
-
-const register = () => {
-    registerUser();
-    registerConnection();
+newUser.value = {
+    documento_usuario: null,
+    tipo_documento_usuario: 1,
+    nombre_usuario: null,
+    apellido_usuario: null,
+    celular_usuario: null,
+    fecha_registro_usuario: null,
+    estado_usuario: 'A',
+    direccion_usuario: null,
+    fecha_nacimiento_usuario: null,
+    foto_usuario: null,
 }
 
-const registerUser = () => {
-    authStore.registerUser(newUser)
+connection.value = {
+    id_usuario: null,
+    id_rol: 3,
+    nick_usuario: null,
+    password_usuario: null,
 }
 
-const registerConnection = () => {
-    authStore.registerConnection(connection)
+const isPersonalDataComplete = () => {
+    const requiredFields = [
+        'nombre_usuario',
+        'apellido_usuario',
+        'documento_usuario',
+        'celular_usuario',
+        'direccion_usuario',
+        'fecha_nacimiento_usuario',
+    ];
+    return requiredFields.every(field => !!newUser.value[field]);
+}
+
+const isDataComplete = () => {
+    const requiredFields = [
+        'nick_usuario',
+        'password_usuario'
+    ];
+
+    return requiredFields.every(field => !!connection.value[field]);
+}
+
+
+const register = async () => {
+    if (await authStore.existsNickname(connection.value.nick_usuario)) {
+        alert("Este nombre de usuario ya existe")
+    } else {
+        newUser.value.fecha_registro_usuario = new Date().toISOString()
+        newUser.value.fecha_nacimiento_usuario = new Date(newUser.value.fecha_nacimiento_usuario).toISOString()
+        newUser.value.documento_usuario = parseInt(newUser.value.documento_usuario)
+        connection.value.id_usuario = newUser.value.documento_usuario
+        await registerUser();
+        await registerConnection();
+    }
+    changeRegister()
+}
+
+const registerUser = async () => {
+    await authStore.registerUser(newUser.value)
+}
+
+const registerConnection = async () => {
+    await authStore.registerConnection(connection.value)
 }
 
 
@@ -110,15 +147,15 @@ function handleFileUpload(event) {
         imageUrl.value = URL.createObjectURL(file);
     }
 }
-const fetchAllDocTypes = async () => {
 
-    documentType.value = await DocTypeService.fetchAll()
-    console.log(documentType.value)
+const fetchAllDocTypes = async () => {
+    documentType.value = await DocTypeService.fetchAllDocs()
 }
 
-onMounted(() => {
+onBeforeMount(() => {
     fetchAllDocTypes()
 })
+
 </script>
   
 <style scoped>
@@ -211,6 +248,18 @@ input[type="button"]:hover {
     background: #0073e6;
 }
 
+input:disabled {
+    background-color: lightgray;
+    color: gray;
+    cursor: not-allowed;
+}
+
+input:disabled:hover {
+    background-color: lightgray;
+    color: gray;
+    cursor: not-allowed;
+}
+
 a {
     color: var(--primary-color);
     text-decoration: underline;
@@ -276,6 +325,7 @@ a:hover {
     background-position: center;
     border: 2px solid white;
     border-radius: 50%;
+    background-image: url('../assets/user.svg');
 }
 
 

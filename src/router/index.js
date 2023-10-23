@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import MainInfoView from '../views/MainInfoView.vue'
 import LoginRegisterView from '../views/LoginRegisterView.vue'
+import UpdateForm from '../views/UpdateForm.vue'
 import { useAuthStore } from '../store/AuthStore'
 
 const router = createRouter({
@@ -19,10 +20,17 @@ const router = createRouter({
       name: 'information',
       component: MainInfoView,
       meta: {
+        authRequired: true,
+      }
+    },
+    {
+      path: '/update',
+      name: 'updateForm',
+      component: UpdateForm,
+      meta: {
         authRequired: true
       }
     }
-
   ]
 })
 

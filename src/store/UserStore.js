@@ -38,19 +38,22 @@ export const useUserStore = defineStore('user', {
             this.users = await UserService.fetchPage(this.currentPage, this.getToken());
         },
         getUserDetails(userId) {
+            this.fetchPage()
             return this.users.find(user => user.documento_usuario === userId);
         },
-
         updateImg(userId, img, token) {
             UploadService.updateImg(userId, img, token)
         },
-
+        async fetchUserById(userId) {
+            return await UserService.fetchUserById(userId, this.getToken())
+        },
         async fetchTotalUsers() {
             this.totalUsers = await UserService.fetchCount(this.getToken())
         },
         calculateTotalPages() {
             this.totalPages = Math.ceil(this.totalUsers / this.usersPerPage);
-        }
+        },
+
     }
 
 })

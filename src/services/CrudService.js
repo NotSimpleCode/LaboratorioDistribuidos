@@ -29,6 +29,7 @@ export default class CrudService {
                         'Authorization': `${token}`
                     }
                 })
+            alert("Usuario agregado exitosamente!!")
             return response.data
         } catch (error) {
             console.error(`Error al enviar ${this.entity}`, error);

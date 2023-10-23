@@ -3,7 +3,7 @@
         <div class="details-content">
             <h2>Detalles del Usuario</h2>
             <div class="image-upload">
-                <label for="fileInput" class="image-preview" @click.prevent="openFileInput" :style=imageStyle>
+                <label for="fileInput" class="image-preview user-photo" @click.prevent="openFileInput" :style=imageStyle>
                     <div class="overlay">
                         <span>Cargar imagen</span>
                     </div>
@@ -11,22 +11,40 @@
                 <input type="file" id="fileInput" accept="image/*" @change="handleFileUpload" style="display: none" />
             </div>
             <div v-if="user" class="user-content">
-                <div class='user-detail'><label>Tipo de documento: </label><strong>{{ user.tipo_documentos.tipo_documento
-                }}</strong></div>
-                <div class='user-detail'><label>Número de documento: </label><strong> {{ user.documento_usuario }}</strong>
+                <div class='user-detail'>
+                    <label>Tipo de documento: </label>
+                    <input type="text" :placeholder="user.tipo_documentos.tipo_documento" :disable="!isUserAdmin()" />
                 </div>
-                <div class='user-detail'><label>Nombre: </label><strong> {{ user.nombre_usuario }}</strong></div>
-                <div class='user-detail'><label>Apellido: </label><strong> {{ user.apellido_usuario }}</strong></div>
-                <div class='user-detail'><label>Celular: </label><strong> {{ user.celular_usuario }}</strong></div>
-                <div class='user-detail'><label>Estado: </label><strong> {{ user.estado_usuario }}</strong></div>
-                <div class='user-detail'><label>Dirección: </label><strong>{{ user.direccion_usuario }}</strong></div>
-                <div class='user-detail'><label>Fecha de nacimiento: </label><strong> {{ user.fecha_nacimiento_usuario
-                }}</strong></div>
-                <div class='user-detail'><label>Fecha de registro: </label><strong> {{ user.fecha_registro_usuario }}
-                    </strong></div>
+                <div class="user-detail">
+                    <label>Nombre: </label>
+                    <input type="text" :placeholder="user.documento_usuario" :disabled="!isUserAdmin()" />
+                </div>
+                <div class="user-detail">
+                    <label>Nombre: </label>
+                    <input type="text" :placeholder="user.nombre_usuario" :disabled="!isUserAdmin()" />
+                </div>
+                <div class='user-detail'><label>Apellido: </label>
+                    <input type="text" :placeholder="user.apellido_usuario" :disabled="!isUserAdmin()" />
+                </div>
+                <div class='user-detail'><label>Celular: </label>
+                    <input type="text" :placeholder="user.celular_usuario" :disabled="!isUserAdmin()" />
+                </div>
+                <div class='user-detail'><label>Estado: </label><input type="text" :placeholder="user.estado_usuario"
+                        :disabled="!isUserAdmin()" />
+                </div>
+                <div class='user-detail'><label>Dirección: </label>
+                    <input type="text" :placeholder="user.direccion_usuario" :disabled="!isUserAdmin()" />
+                </div>
+                <div class='user-detail'><label>Fecha de nacimiento: </label>
+                    <input type="text" :placeholder="getDate(user.fecha_nacimiento_usuario)" :disabled="!isUserAdmin()" />
+                </div>
+                <div class='user-detail'><label>Fecha de registro: </label>
+                    <input type="text" :placeholder="getDate(user.fecha_registro_usuario)" :disabled="!isUserAdmin()" />
+                </div>
                 <!-- <div><strong>Rol:</strong> {{ user.rol}}</div> -->
             </div>
-            <input class="close-btn" type="button" value="Aceptar" @click="closeDetails">
+            <input v-if="isUserAdmin()" class="update-btn btn" type="button" value="Actualizar">
+            <input class="close-btn btn" type="button" value="Volver" @click="closeDetails">
         </div>
     </div>
 </template>
@@ -37,10 +55,25 @@ import { useUserStore } from '../store/UserStore';
 import { useAuthStore } from '../store/AuthStore';
 
 const userStore = useUserStore();
-const authStore = useAuthStore()
+const authStore = useAuthStore();
+
+const noDataValue = 'Vacío'
 const emits = defineEmits(['close']);
 const selectedImage = ref(null)
-const imageUrl = ref('src/assets/user.svg')
+const imageUrl = ref()
+const defaultImg = ref('src/assets/user.svg')
+// const newUser = ref({})
+// const connection = ref({})
+
+
+
+// connection.value = {
+//     id_usuario: null,
+//     id_rol: null,
+//     nick_usuario: null,
+//     password_usuario: null,
+// }
+
 
 const props = defineProps({
     userId: Number, // ID del usuario seleccionado
@@ -52,7 +85,7 @@ const updateImg = () => {
 }
 
 const imageStyle = computed(() => ({
-    backgroundImage: user.value.foto_usuario ? `url(${user.value.foto_usuario})` : `url(${imageUrl.value})`,
+    backgroundImage: user.value.foto_usuario ? `url(${user.value.foto_usuario})` : `url(${defaultImg.value})`,
 }));
 
 const user = computed(() => {
@@ -60,8 +93,6 @@ const user = computed(() => {
 });
 
 const closeDetails = () => {
-    updateImg();
-    userStore.fetchPage()
     emits('close');
 };
 
@@ -73,17 +104,35 @@ function handleFileUpload(event) {
     const file = event.target.files[0];
     if (file) {
         selectedImage.value = file
-        imageUrl.value = URL.createObjectURL(file);
+        imageUrl.value = URL.createObjectURL(selectedImage.value);
     }
+    updateImg();
 }
 
+const getDate = (time) => {
+    if (time != null) {
+        return time.split("T")[0];
+    }
+    return noDataValue;
+}
 
+function isUserAdmin() {
+    const isAdmin = authStore.onlineUser.rol.includes('administrador')
+    return isAdmin
+}
+console.log()
 watchEffect(() => {
-    selectedImage;
+
     if (!props.show) {
         closeDetails();
     }
 });
+
+// onMounted(() => {
+//     newUser.value = { ...user.value }
+// })
+
+
 </script>
   
 <style scoped>
@@ -100,7 +149,8 @@ watchEffect(() => {
 }
 
 .details-content {
-    max-width: 60%;
+    max-width: 70%;
+    height: 70%;
     background: white;
     padding: 20px;
     border-radius: 5px;
@@ -146,10 +196,11 @@ h2 {
     color: gray;
 }
 
-.close-btn {
-    grid-row: -1;
+.btn {
     grid-column: 1/-1;
 }
+
+
 
 .image-upload {
     text-align: center;
@@ -179,6 +230,7 @@ h2 {
 
 .overlay span {
     cursor: pointer;
+    user-select: none;
 }
 
 .image-preview {
@@ -193,6 +245,21 @@ h2 {
     border: 2px solid white;
     border-radius: 50%;
     top: 40%;
+
+}
+
+input:not(input[type="button"]) {
+    border-style: none;
+    color: var(--black-color);
+}
+
+input::placeholder {
+    color: var(--black-color);
+    font-weight: bold;
+}
+
+input::placeholder:focus {
+    border-style: none;
 
 }
 </style>
