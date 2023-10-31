@@ -7,24 +7,21 @@ import router from '../router'
 export const useAuthStore = defineStore('auth', {
     state: () => ({
         showLogin: true,
-        token: null,
-        onlineUser: { nick: null, rol: null, foto: null },
+        onlineUser: { nick: null, rol: null, foto: null, token: null },
         password: null,
     }),
 
     actions: {
-        async updateOnlineUser() {
-            const user = await ConnectionService.fetchByUserNickname(this.onlineUser.nick, this.token)
+        async updateOnlineUser(nickname, token) {
+            const user = await ConnectionService.fetchByUserNickname(nickname, token)
             this.onlineUser = {
                 nick: user.nick_usuario,
                 rol: user.roles.nombre_rol,
-                foto: user.usuarios.foto_usuario
-            };
-            // localStorage.setItem('user', JSON.stringify(this.onlineUser))
+                foto: user.usuarios.foto_usuario,
+                token: token
+            }
         },
-        setRegTime() {
-            return new Date().toISOString();
-        },
+
         toggleForm() {
             this.showLogin = !this.showLogin;
         },
@@ -33,8 +30,7 @@ export const useAuthStore = defineStore('auth', {
             try {
                 const response = await LoginService.login({ nombre_usuario: this.onlineUser.nick, password_usuario: this.password });
                 if (response.status) {
-                    this.token = response.token
-                    await this.updateOnlineUser()
+                    await this.updateOnlineUser(this.onlineUser.nick, response.token)
                     router.push({ name: 'information' });
                 }
             } catch (error) {
@@ -54,9 +50,21 @@ export const useAuthStore = defineStore('auth', {
         },
         async registerConnection(connection) {
             console.log("nuevo conn", connection);
-            const response = await ConnectionService.postRegisterConnection(connection, this.token)
+            const response = await ConnectionService.postRegisterConnection(connection, this.onlineUser.token)
             console.log("registrado conn ", response)
 
+        },
+        logout() {
+            this.onlineUser = { nick: null, rol: null, foto: null, token: null }
+            this.password = null
+        },
+        async reloadOnlineUser() {
+            await this.updateOnlineUser(this.onlineUser.nick, this.onlineUser.token)
         }
     },
+    persist: {
+        storage: sessionStorage,
+        paths: ['onlineUser']
+    }
+
 });

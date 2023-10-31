@@ -10,7 +10,7 @@ class DocTypeService extends CrudService {
             const response = await axios.get(this.url);
             return response.data
         } catch (error) {
-            console.error(`Error al obtener ${this.entity}`, error);
+            console.error(`Error al obtener ${this.entity}`);
             throw error;
         }
     }

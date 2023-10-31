@@ -14,7 +14,6 @@ class UserService extends CrudService {
                         'Authorization': `${token}`
                     }
                 })
-            console.log(response.data);
             return response.data
         } catch (error) {
             console.error(`Error al obtener ${this.entity}`, error);
@@ -23,7 +22,6 @@ class UserService extends CrudService {
     }
 
     async postRegisterUser(data) {
-        console.log(data);
         try {
             const response = await axios.post('http://localhost:3000/api/users/post', data,
                 {
@@ -38,5 +36,34 @@ class UserService extends CrudService {
             throw error
         }
     }
+
+    async patchStatus(userId, newStatus, token) {
+        const response = await axios.patch(this.url + `/${userId}/status`, { estado_usuario: newStatus },
+            {
+                headers: {
+                    'Content-Type': 'Application/json',
+                    'Authorization': `${token}`
+                },
+            })
+        if (response.error) {
+            return response.data.error
+        }
+        return response.data.message
+    }
+
+    async patchUser(userId, updates, token) {
+        const response = await axios.patch(this.url + `/${userId}/update`, updates,
+            {
+                headers: {
+                    'Content-Type': 'Application/json',
+                    'Authorization': `${token}`
+                },
+            })
+        if (response.error) {
+            return response.data.error
+        }
+        return response.data.message
+    }
+
 }
 export default new UserService();

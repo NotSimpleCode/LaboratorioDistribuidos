@@ -4,12 +4,12 @@
             <h1>Registro de Usuario</h1>
             <input type="text" v-model="newUser.nombre_usuario" placeholder="Nombre *" required />
             <input type="text" v-model="newUser.apellido_usuario" placeholder="Apellido *" required />
-            <input type="text" v-model="newUser.documento_usuario" placeholder="Documento de usuario *" required />
             <select v-model="newUser.tipo_documento_usuario">
                 <option v-for="doc in documentType" :key="doc.id_tipo_documento" :value="doc.id_tipo_documento">
                     {{ doc.tipo_documento }}
                 </option>
             </select>
+            <input type="text" v-model="newUser.documento_usuario" placeholder="Documento de usuario *" required />
             <input type="text" v-model="newUser.celular_usuario" placeholder="Celular *" required />
             <input type="text" v-model="newUser.direccion_usuario" placeholder="Dirección *" required />
             <input type="date" v-model="newUser.fecha_nacimiento_usuario" placeholder="Fecha de Nacimiento *" required />
@@ -20,7 +20,8 @@
         <div v-else class="register-credentials-form">
             <h1>Registro de Usuario</h1>
             <div class="image-upload">
-                <label for="fileInput" class="image-preview" @click.prevent="openFileInput">
+                <label for="fileInput" class="image-preview" @click.prevent="openFileInput"
+                    :style="{ backgroundImage: `url(${imageUrl})` }">
                     <div class="overlay">
                         <span>Cargar imagen</span>
                     </div>
@@ -33,7 +34,7 @@
                     v-model="connection.password_usuario" placeholder="Contraseña *" required><i
                     :class="isPasswordVisible ? 'bi bi-eye-slash-fill' : 'bi bi-eye-fill'" @click="showPassword"></i>
             </div>
-            <input type="button" @click="register" :disabled="!isDataComplete()"
+            <input type="button" @click="registerConnection" :disabled="!isDataComplete()"
                 class="register-btn register-credentials-btn" value="Registrarse" />
             <input type="button" @click="changeRegister" class="register-btn back-btn" value="Volver" />
             <input type="button" @click="authStore.toggleForm" class="register-btn" value="Cancelar" />
@@ -48,7 +49,7 @@ import { useAuthStore } from '../store/AuthStore';
 
 const authStore = useAuthStore()
 const isDataFill = ref(false)
-const imageUrl = ref(null)
+const imageUrl = ref('../src/assets/user.svg')
 const isPasswordVisible = ref(false)
 // const userName = ref('');
 // const userLastname = ref('');
@@ -59,7 +60,6 @@ const documentType = ref();
 // const userBirthdate = ref('');
 // const userAccountName = ref('')
 // const password = ref('')
-console.log(new Date().toISOString());
 const newUser = ref({})
 const connection = ref({})
 
@@ -104,32 +104,23 @@ const isDataComplete = () => {
     return requiredFields.every(field => !!connection.value[field]);
 }
 
-
-const register = async () => {
-    if (await authStore.existsNickname(connection.value.nick_usuario)) {
-        alert("Este nombre de usuario ya existe")
-    } else {
-        newUser.value.fecha_registro_usuario = new Date().toISOString()
-        newUser.value.fecha_nacimiento_usuario = new Date(newUser.value.fecha_nacimiento_usuario).toISOString()
-        newUser.value.documento_usuario = parseInt(newUser.value.documento_usuario)
-        connection.value.id_usuario = newUser.value.documento_usuario
-        await registerUser();
-        await registerConnection();
-    }
-    changeRegister()
-}
-
 const registerUser = async () => {
+    newUser.value.fecha_registro_usuario = new Date().toISOString()
+    newUser.value.fecha_nacimiento_usuario = new Date(newUser.value.fecha_nacimiento_usuario).toISOString()
+    newUser.value.documento_usuario = parseInt(newUser.value.documento_usuario)
     await authStore.registerUser(newUser.value)
 }
 
 const registerConnection = async () => {
+    connection.value.id_usuario = newUser.value.documento_usuario
     await authStore.registerConnection(connection.value)
+    authStore.showLogin = true
 }
 
 
-const changeRegister = () => {
+const changeRegister = async () => {
     isDataFill.value = !isDataFill.value
+    await registerUser()
 }
 
 const showPassword = () => {
@@ -149,6 +140,7 @@ function handleFileUpload(event) {
 }
 
 const fetchAllDocTypes = async () => {
+    // documentType.value = [{ id_tipo_documento: 1, tipo_documento: "CC" }, { id_tipo_documento: 2, tipo_documento: "TI" }, { id_tipo_documento: 3, tipo_documento: "CE" }, { id_tipo_documento: 4, tipo_documento: "OT" }]
     documentType.value = await DocTypeService.fetchAllDocs()
 }
 
@@ -325,7 +317,6 @@ a:hover {
     background-position: center;
     border: 2px solid white;
     border-radius: 50%;
-    background-image: url('../assets/user.svg');
 }
 
 

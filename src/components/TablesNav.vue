@@ -7,9 +7,11 @@
         <div class="submenu" :class="{ 'expanded': isActiveMenu('users') }">
             <p :class="{ active: tableStore.activeSubMenu == 'users' }" @click="activateSubMenu('users')">Ver
                 Lista</p>
-            <p :class="{ active: tableStore.activeSubMenu === 'registrar' }">Registrar</p>
+            <p v-if="authStore.onlineUser.rol != null && authStore.onlineUser.rol.includes('admin')"
+                :class="{ active: tableStore.activeSubMenu === 'registrar' }">Registrar</p>
         </div>
-        <div class="menu-item" @click="toggleMenu('roles')">
+        <div v-if="authStore.onlineUser.rol != null && authStore.onlineUser.rol.includes('admin')" class="menu-item"
+            @click="toggleMenu('roles')">
             <i class="bi bi-person-arms-up"></i>
             <p :class="{ active: tableStore.activeMenu === 'roles' }">Roles</p>
         </div>
@@ -24,6 +26,9 @@
 <script setup>
 import { onMounted, onUnmounted } from 'vue';
 import { useTableStore } from '../store/TableStore';
+import { useAuthStore } from '../store/AuthStore';
+
+const authStore = useAuthStore()
 const tableStore = useTableStore()
 
 const toggleMenu = (menu) => {

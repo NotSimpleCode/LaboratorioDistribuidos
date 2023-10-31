@@ -10,7 +10,7 @@ export const useRoleStore = defineStore('roles', {
     actions: {
         getToken() {
             const authStore = useAuthStore()
-            return authStore.token
+            return authStore.onlineUser.token
         },
 
         async fetchRoles() {

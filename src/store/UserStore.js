@@ -15,7 +15,7 @@ export const useUserStore = defineStore('user', {
     actions: {
         getToken() {
             const authStore = useAuthStore()
-            return authStore.token
+            return authStore.onlineUser.token
         },
 
         async onInit() {
@@ -41,11 +41,37 @@ export const useUserStore = defineStore('user', {
             this.fetchPage()
             return this.users.find(user => user.documento_usuario === userId);
         },
-        updateImg(userId, img, token) {
-            UploadService.updateImg(userId, img, token)
+        async updateImg(userId, img, token) {
+            await UploadService.updateImg(userId, img, token)
+            this.fetchPage()
         },
         async fetchUserById(userId) {
             return await UserService.fetchUserById(userId, this.getToken())
+        },
+        //Funciones de actualización
+        async patchName(userId, newName) {
+            return await UserService.patchName(userId, newName, this.getToken())
+        },
+        async patchLastName(userId, newLastName) {
+            return await UserService.patchLastName(userId, newLastName, this.getToken())
+        },
+        async patchCellphone(userId, newCellphone) {
+            return await UserService.patchCellphone(userId, newCellphone, this.getToken())
+        },
+        async patchStatus(userId, newStatus) {
+            return await UserService.patchStatus(userId, newStatus, this.getToken())
+        },
+        async patchEmail(userId, newEmail) {
+            return await UserService.patchEmail(userId, newEmail, this.getToken())
+        },
+        async patchBirthDate(userId, newBirthDate) {
+            return await UserService.patchBirthDate(userId, newBirthDate, this.getToken())
+        },
+        async patchRegisterDate(userId, newRegisterDate) {
+            return await UserService.patchLastName(userId, newRegisterDate, this.getToken())
+        },
+        async patchUser(userId, data) {
+            return await UserService.patchUser(userId, data, this.getToken())
         },
         async fetchTotalUsers() {
             this.totalUsers = await UserService.fetchCount(this.getToken())

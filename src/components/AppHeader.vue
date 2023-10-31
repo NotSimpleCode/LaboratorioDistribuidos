@@ -11,9 +11,7 @@
             </div>
 
             <div class="user-info" @click="toggleMenu">
-                <img class="user-avatar"
-                    :src="authStore.onlineUser.foto ? authStore.onlineUser.foto : '../src/assets/user.svg'"
-                    alt="imagen de perfil" />
+                <img class="user-avatar" :src="actualImg" alt="imagen de perfil" />
                 <div class="user-details">
                     <p class="user-name">{{ authStore.onlineUser.nick }}</p>
                     <p class="user-role">{{ authStore.onlineUser.rol }}</p>
@@ -30,15 +28,15 @@
 </template>
   
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useAuthStore } from '../store/AuthStore'
 import router from '../router'
 
-const isMenuVisible = ref(false);
+const isMenuVisible = ref(false)
 const authStore = useAuthStore()
 let isFocused = ref(false)
 let searchIcon = ref('../src/assets/search-white.svg')
-
+const actualImg = computed(() => authStore.onlineUser.foto ? authStore.onlineUser.foto : '../src/assets/user.svg')
 
 const onSearchFocus = () => {
     isFocused.value = true;
@@ -63,9 +61,10 @@ const editProfile = () => {
 }
 
 const logout = () => {
-
+    authStore.token = null
+    router.push({ name: "login" })
+    authStore.logout()
 }
-
 
 </script>
   

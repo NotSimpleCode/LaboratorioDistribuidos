@@ -19,42 +19,44 @@
                 <div class="user-cell">Celular</div>
                 <div class="user-cell">Fecha de Registro</div>
                 <div class="user-cell">Estado</div>
-                <div class="user-cell">Dirección</div>
+                <div class="user-cell">Correo</div>
             </div>
-            <div v-for="user in filteredUsers " :key="user" class="user-row row"
-                @click="showUserDetails(user.documento_usuario)">
-                <div class="user-cell user-photo" :style="getUserImageStyle(user.foto_usuario)">
-                </div>
-                <div :class="{ 'user-cell': true, 'user-cell-empty': !user.documento_usuario }">{{ user.documento_usuario ||
-                    noDataValue }}</div>
-                <!-- <div :class="{ 'user-cell': true, 'user-cell-empty': !user.tipo_documentos }">{{ user.tipo_documentos ?
-                user.tipo_documentos.tipo_documento : noDataValue }}</div> -->
-                <div :class="{ 'user-cell': true, 'user-cell-empty': !user.nombre_usuario }" :title="user.nombre_usuario">{{
-                    user.nombre_usuario ||
-                    noDataValue
-                }}
-                </div>
-                <div :class="{ 'user-cell': true, 'user-cell-empty': !user.apellido_usuario }"
-                    :title="user.apellido_usuario">{{
-                        user.apellido_usuario ||
-                        noDataValue
-                    }}</div>
-                <div :class="{ 'user-cell': true, 'user-cell-empty': !user.celular_usuario }" :title="user.celular_usuario">
-                    {{
-                        user.celular_usuario ||
-                        noDataValue
-                    }}</div>
-                <div :class="{ 'user-cell': true, 'user-cell-empty': !user.fecha_registro_usuario }">{{
-                    getDate(user.fecha_registro_usuario) }}</div>
-                <div :class="{ 'user-cell': true, 'user-cell-empty': !user.estado_usuario }">{{ user.estado_usuario ||
-                    noDataValue
-                }}
-                </div>
-                <div :class="{ 'user-cell': true, 'user-cell-empty': !user.direccion_usuario }"
-                    :title="user.direccion_usuario">
-                    {{ user.direccion_usuario ||
+            <div v-for="user in filteredUsers" :key="user">
+                <div class="user-row row" @click="showUserDetails(user.documento_usuario)">
+                    <i @click="changeState(user)" class="bi bi-person-x"></i>
+                    <div class="user-cell user-photo" :style="getUserImageStyle(user.foto_usuario)">
+                    </div>
+                    <div :class="{ 'user-cell': true, 'user-cell-empty': !user.documento_usuario }">{{
+                        user.documento_usuario ||
                         noDataValue }}</div>
-                <i @click="changeState(user)" class="bi bi-person-x"></i>
+                    <div :class="{ 'user-cell': true, 'user-cell-empty': !user.nombre_usuario }"
+                        :title="user.nombre_usuario">{{
+                            user.nombre_usuario ||
+                            noDataValue
+                        }}
+                    </div>
+                    <div :class="{ 'user-cell': true, 'user-cell-empty': !user.apellido_usuario }"
+                        :title="user.apellido_usuario">{{
+                            user.apellido_usuario ||
+                            noDataValue
+                        }}</div>
+                    <div :class="{ 'user-cell': true, 'user-cell-empty': !user.celular_usuario }"
+                        :title="user.celular_usuario">
+                        {{
+                            user.celular_usuario ||
+                            noDataValue
+                        }}</div>
+                    <div :class="{ 'user-cell': true, 'user-cell-empty': !user.fecha_registro_usuario }">{{
+                        getDate(user.fecha_registro_usuario) }}</div>
+                    <div :class="{ 'user-cell': true, 'user-cell-empty': !user.estado_usuario }">{{ user.estado_usuario ||
+                        noDataValue
+                    }}
+                    </div>
+                    <div :class="{ 'user-cell': true, 'user-cell-empty': !user.direccion_usuario }"
+                        :title="user.direccion_usuario">
+                        {{ user.direccion_usuario ||
+                            noDataValue }}</div>
+                </div>
             </div>
             <UserDetails v-if="showDetails" :user-id="selectedUserId" :show="showDetails" @close="closeUserDetails" />
         </div>
@@ -93,7 +95,7 @@ const currentPage = computed(() => userStore.currentPage);
 const totalPages = computed(() => userStore.totalPages);
 
 const changeState = (user) => {
-
+    console.log(user)
 }
 
 const showUserDetails = (userId) => {
@@ -175,7 +177,6 @@ const visiblePages = computed(() => {
     return pages;
 })
 
-
 const getActualRange = () => {
     const start = (currentPage.value * userStore.usersPerPage) - userStore.usersPerPage + 1;
     const end = currentPage.value * userStore.usersPerPage;
@@ -203,7 +204,6 @@ onBeforeMount(() => {
     userStore.onInit()
     fetchData()
 })
-
 
 </script>
   
@@ -290,6 +290,7 @@ onBeforeMount(() => {
     gap: 8px;
     height: 67vh;
     overflow-y: auto;
+    position: relative;
 }
 
 .row {
@@ -309,6 +310,7 @@ onBeforeMount(() => {
     color: var(--black-color);
     font-weight: bold;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.08);
+    z-index: 10;
 }
 
 .user-cell {
@@ -321,7 +323,7 @@ onBeforeMount(() => {
     -webkit-line-clamp: 1;
 }
 
-.user-row>.user-photo {
+.user-row .user-photo {
     margin-left: 20px;
     width: 35px;
     height: 35px;
@@ -330,7 +332,7 @@ onBeforeMount(() => {
     background-image: url('../assets/user.svg');
 }
 
-.user-header>.user-cell {
+.user-header .user-cell {
     -webkit-line-clamp: 3;
 }
 
@@ -341,18 +343,27 @@ onBeforeMount(() => {
 
 .user-row {
     cursor: pointer;
+    position: relative;
 }
 
 .bi-person-x {
+    width: 30px;
+    height: 20px;
     color: red;
     cursor: pointer;
     position: absolute;
-    left: 10%;
+    left: 9%;
     display: none;
+    z-index: 20;
 }
 
 .user-row:hover .bi-person-x {
-    display: inline;
+    display: inline-block;
+}
+
+.user-row .bi-person-x:hover {
+    background-color: red;
+    color: white;
 }
 
 .user-row:hover {

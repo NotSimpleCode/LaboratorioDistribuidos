@@ -14,7 +14,7 @@ export const useConnectionStore = defineStore('conn', {
     actions: {
         getToken() {
             const authStore = useAuthStore()
-            return authStore.token
+            return authStore.onlineUser.token
         },
         async onInit() {
             await this.fetchTotalConnections();
