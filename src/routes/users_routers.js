@@ -189,10 +189,6 @@ router.delete('/users/:id', auth.authenticateToken, async (req, res) => {
     }
 });
 
-
-
-
-
 router.put('/users/:id', auth.authenticateToken, async (req, res) => {
     try {
         const UserUpdate = await orm.usuarios_roles.update({
@@ -230,7 +226,6 @@ router.post('/users', auth.authenticateToken, async (req, res) => {
 
 router.post('/users/post', async (req, res) => {
     try {
-
         const newConnection = await orm.usuarios.create({
             data: req.body
         });
@@ -242,20 +237,68 @@ router.post('/users/post', async (req, res) => {
     }
 });
 
-router.patch('/users/:document', auth.authenticateToken, async (req, res) => {
-    const { name } = req.body;
-    const nameUser = await orm.usuarios.update({
+router.patch('/users/:document/status', auth.authenticateToken, async (req, res) => {
+    const { estado_usuario } = req.body;
+    const stateUser = await orm.usuarios.update({
         where: {
-            document: parseInt(req.params.document)
+            documento_usuario: parseInt(req.params.document)
         },
         data: {
-            name: name
+            estado_usuario: estado_usuario
         }
     })
-    if (!nameUser)
+    if (!stateUser)
         return res.status(404).json({ error: "User not found" })
     return res.status(200).json({ message: "Modified successfully" })
 });
+
+//Funcion para obtener unicamente los campos que se cambiaron en front
+function validateUpdateFields(updates) {
+    const validFields = {};
+
+    for (const key in updates) {
+        if (updates[key] !== null && updates[key] !== '') {
+            validFields[key] = updates[key];
+        }
+    }
+
+    return validFields;
+}
+
+router.patch('/users/:document/update', auth.authenticateToken, async (req, res) => {
+    const updates = req.body; // Objeto que contiene solo los campos que han cambiado en front
+
+    const document = parseInt(req.params.document);
+    const user = await orm.usuarios.findFirst({
+        where: {
+            documento_usuario: document
+        }
+    });
+
+    if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+    }
+
+    const validFields = validateUpdateFields(updates);
+
+    if (Object.keys(validFields).length === 0) {
+        return res.status(400).json({ error: 'No se puede actualizar usuario' });
+    }
+
+    // Llama a la función de actualización con los campos válidos
+    await updateUserInDatabase(document, validFields);
+
+    return res.status(200).json({ message: 'Usuario modificado exitosamente' });
+});
+
+async function updateUserInDatabase(document, updates) {
+    await orm.usuarios.update({
+        where: {
+            documento_usuario: document
+        },
+        data: updates
+    });
+}
 
 router.patch('/users/:id', auth.authenticateToken, async (req, res) => {
     const { foto_usuario } = req.body;
@@ -271,7 +314,6 @@ router.patch('/users/:id', auth.authenticateToken, async (req, res) => {
         return res.status(404).json({ error: "User not found" })
     return res.status(200).json({ message: "Picture Modified successfully" })
 });
-
 
 
 export default router;
