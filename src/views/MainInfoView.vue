@@ -5,6 +5,7 @@
         <TablesNav class="navigator"></TablesNav>
         <UsersTable v-if="tableStore.activeSubMenu === 'users'"></UsersTable>
         <RolesTable v-else-if="tableStore.activeSubMenu === 'roles'"></RolesTable>
+        <OnlyRolesTable v-else-if="tableStore.activeSubMenu === 'Only_roles'"></OnlyRolesTable>
     </main>
 </template>
 <script setup>
@@ -12,6 +13,7 @@ import AppHeader from '../components/AppHeader.vue';
 import TablesNav from '../components/TablesNav.vue';
 import UsersTable from '../components/UsersTable.vue';
 import RolesTable from '../components/RolesTable.vue';
+import OnlyRolesTable from '../components/OnlyRolesTable.vue';
 import { useTableStore } from '../store/TableStore'
 
 const tableStore = useTableStore()
