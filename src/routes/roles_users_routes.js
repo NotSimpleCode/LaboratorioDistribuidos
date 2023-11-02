@@ -149,11 +149,12 @@ router.delete('/connection/:id/:id_rol', auth.authenticateToken, async (req, res
     }
 });
 
-router.put('/connection/:id', auth.authenticateToken, async (req, res) => {
+//edita por nick una conexion
+router.put('/connection/:nick', auth.authenticateToken, async (req, res) => {
     try {
         const connectionUpdate = await orm.usuarios_roles.update({
             where: {
-                id_usuario: parseInt(req.params.id)
+                nick_usuario: req.params.nick
             },
             data: req.body
         });
@@ -282,6 +283,8 @@ router.post('/login', async (req, res) => {
         res.status(500).json({ error: "Internal server error not connection" });
     }
 });
+
+
 
 
 export default router;

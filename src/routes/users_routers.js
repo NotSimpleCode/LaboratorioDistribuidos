@@ -112,7 +112,7 @@ router.get('/users', auth.authenticateToken, async (req, res) => {
     }
 });
 
-router.get('/users/id/:id', auth.authenticateToken, async (req, res) => {
+router.get('/users/:id', auth.authenticateToken, async (req, res) => {
     try {
 
         const foundUser = await orm.usuarios.findFirst({
@@ -137,7 +137,7 @@ router.get('/users/id/:id', auth.authenticateToken, async (req, res) => {
 });
 
 
-router.get('/users/:value', auth.authenticateToken, async (req, res) => {
+router.get('/users/any/:value', auth.authenticateToken, async (req, res) => {
     try {
         const val = req.params.value
         const foundUser = await orm.usuarios.findFirst({
@@ -191,7 +191,7 @@ router.delete('/users/:id', auth.authenticateToken, async (req, res) => {
 
 router.put('/users/:id', auth.authenticateToken, async (req, res) => {
     try {
-        const UserUpdate = await orm.usuarios_roles.update({
+        const UserUpdate = await orm.usuarios.update({
             where: {
                 documento_usuario: parseInt(req.params.id)
             },
@@ -210,21 +210,7 @@ router.put('/users/:id', auth.authenticateToken, async (req, res) => {
     }
 });
 
-router.post('/users', auth.authenticateToken, async (req, res) => {
-    try {
-
-        const newConnection = await orm.usuarios.create({
-            data: req.body
-        });
-
-        res.status(200).json({ info: "User created!" });
-    } catch (error) {
-        console.error("Error creating user:", error);
-        return res.status(400).json({ error: "User could not be created." });
-    }
-});
-
-router.post('/users/post', async (req, res) => {
+router.post('/users', async (req, res) => {
     try {
         const newConnection = await orm.usuarios.create({
             data: req.body
@@ -236,6 +222,8 @@ router.post('/users/post', async (req, res) => {
         return res.status(400).json({ error: "User could not be created." });
     }
 });
+
+
 
 router.patch('/users/:document/status', auth.authenticateToken, async (req, res) => {
     const { estado_usuario } = req.body;
@@ -272,7 +260,8 @@ router.patch('/users/:document/update', auth.authenticateToken, async (req, res)
     const user = await orm.usuarios.findFirst({
         where: {
             documento_usuario: document
-        }
+        },
+        data: updates
     });
 
     if (!user) {
@@ -300,20 +289,56 @@ async function updateUserInDatabase(document, updates) {
     });
 }
 
-router.patch('/users/:id', auth.authenticateToken, async (req, res) => {
-    const { foto_usuario } = req.body;
-    const fotoUser = await orm.usuarios.update({
-        where: {
-            documento_usuario: parseInt(req.params.id)
-        },
-        data: {
-            foto_usuario: foto_usuario
-        }
-    })
-    if (!fotoUser)
-        return res.status(404).json({ error: "User not found" })
-    return res.status(200).json({ message: "Picture Modified successfully" })
+
+//GMAIL
+
+router.get('/users/email/superadmin', auth.authenticateToken, async (req, res) => {
+    try {
+        const users = await orm.usuarios.findMany({
+            include:{
+                usuarios_roles:true
+            },
+            where:{
+                usuarios_roles:{
+                    some: {
+                        id_rol: 2 // Reemplaza 'tuID' con el ID que estás buscando superadmin(2)
+                    }
+                }
+            }
+            
+        });
+
+        const direcciones = users.map(user => user.direccion_usuario);
+        
+        res.json(direcciones);
+
+    } catch (error) {
+        console.error("Error emails fetching", error);
+        res.status(500).json({ error: "Error emails fetching" });
+    }
 });
 
+
+//obtiene los usuarios creados en una fecha especifica
+router.get('/users/email/created/:date', auth.authenticateToken, async (req, res) => {
+    try {
+        const date = new Date(req.params.date)
+
+        const usersCreated = await orm.usuarios.findMany({
+            where:{
+                fecha_registro_usuario : date
+            }
+            
+        });
+
+        
+        
+        res.json(usersCreated);
+
+    } catch (error) {
+        console.error("Error in users created dates", error);
+        res.status(500).json({ error: "Error in users created dates" });
+    }
+});
 
 export default router;
