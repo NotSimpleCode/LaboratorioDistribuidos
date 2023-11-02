@@ -43,10 +43,11 @@ model usuarios_roles {
 }
 
 model roles {
-  id_rol             Int              @id
-  nombre_rol         String           @db.VarChar(20)
-  fecha_creacion_rol DateTime         @db.DateTime(0)
-  estado_rol         String?          @default("A") @db.Char(1)
-  descripcion_rol    String?          @db.VarChar(100)
-  usuarios_roles     usuarios_roles[]
+  id_rol                Int              @id
+  nombre_rol            String           @db.VarChar(20)
+  fecha_creacion_rol    DateTime         @db.DateTime(0)
+  estado_rol            String?          @default("A") @db.Char(1)
+  descripcion_rol       String?          @db.VarChar(100)
+  numero_personas_roles Int?             @default(0)
+  usuarios_roles        usuarios_roles[]
 }

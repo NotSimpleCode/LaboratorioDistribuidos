@@ -4,14 +4,47 @@ import * as auth from '../authToken.js';
 
 const router = Router();
 
+
+router.get('/roles/count', auth.authenticateToken, async (req, res) => {
+    try {
+        // Realiza la consulta a la base de datos para obtener los elementos
+        const roles = await orm.roles.findMany({
+            select:{
+                id_rol: true,
+                numero_personas_roles:true
+            }
+        });
+
+        if (roles.length !=0) {
+            res.json(roles);
+        }else{
+
+            // Envía la respuesta con los elementos
+            res.status(204).json({ info: "Not content" });
+        }
+    } catch (error) {
+        console.error("Error fetching count roles:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+
 router.get('/roles', auth.authenticateToken, async (req, res) => {
     try {
         
 
         // Realiza la consulta a la base de datos para obtener los elementos
         const roles = await orm.roles.findMany({
-
+            select:{
+                id_rol: true,
+                nombre_rol: true,
+                fecha_creacion_rol: true,
+                estado_rol: true,
+                descripcion_rol: true
+            }
         });
+
+
 
         if (roles.length !=0) {
             res.json(roles);
