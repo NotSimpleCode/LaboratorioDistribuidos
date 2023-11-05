@@ -1,7 +1,7 @@
 <template>
-    <div class="user-details" v-if="show && userLoaded">
+    <div class="person-details" v-if="show && personLoaded">
         <div class="details-content">
-            <h2>Detalles del Usuario</h2>
+            <h2>Modificar/Ver Datos de Persona</h2>
             <div class="image-upload">
                 <label for="fileInput" class="image-preview user-photo" @click.prevent="openFileInput" :style="imageStyle">
                     <div class=" overlay">
@@ -10,67 +10,105 @@
                 </label>
                 <input type="file" id="fileInput" accept="image/*" @change="handleFileUpload" style="display: none" />
             </div>
-            <div v-if="user" class="user-content">
-                <div class='user-detail'>
-                    <label>Tipo de documento: </label>
-                    <input type="text" :placeholder="user.tipo_documentos.tipo_documento" :disabled="!isUserAdmin()"
-                        :style="adminStyle()" />
-                </div>
-                <div class="user-detail">
-                    <label>Número Documento: </label>
-                    <input type="text" :placeholder="user.documento_usuario" disabled />
-                </div>
-                <div class="user-detail">
-                    <label>Nombre(s): </label>
-                    <input type="text" :placeholder="user.nombre_usuario" :disabled="!isUserAdmin()" :style="adminStyle()"
-                        v-model="updatedUser.nombre_usuario" />
-                </div>
-                <div class='user-detail'><label>Apellido(s): </label>
-                    <input type="text" :placeholder="user.apellido_usuario" :disabled="!isUserAdmin()" :style="adminStyle()"
-                        v-model="updatedUser.apellido_usuario" />
-                </div>
-                <div class='user-detail'><label>Celular: </label>
-                    <input type="text" :placeholder="user.celular_usuario" :disabled="!isUserAdmin()" :style="adminStyle()"
-                        v-model="updatedUser.celular_usuario" />
-                </div>
-                <div class='user-detail'><label>Estado: </label><input type="text" :placeholder="user.estado_usuario"
-                        :disabled="!isUserAdmin()" :style="adminStyle()" v-model="updatedUser.estado_usuario" />
-                </div>
-                <div class='user-detail'><label>Correo Electronico: </label>
-                    <input type="text" :placeholder="user.direccion_usuario" :disabled="!isUserAdmin()"
-                        :style="adminStyle()" v-model="updatedUser.direccion_usuario" />
-                </div>
-                <div class='user-detail'><label>Fecha de nacimiento: </label>
-                    <input type="text" :placeholder="getDate(user.fecha_nacimiento_usuario)" :disabled="!isUserAdmin()"
-                        :style="adminStyle()" v-model="updatedUser.fecha_nacimiento_usuario" />
-                </div>
-                <div class='user-detail'><label>Fecha de registro: </label>
-                    <input type="text" :placeholder="getDate(user.fecha_registro_usuario)" disabled />
-                </div>
+            <div v-if="person" class="user-content">
+                <form @submit.prevent="updatePerson">
+                    <div class="person-detail" id="doc-update">
+                        <label>Tipo de documento:</label>
+                        <select v-model="updatedPerson.tipo_documento_usuario" :disabled="!isUserAdmin()"
+                            :style="adminStyle()" id="doc-update-select">
+                            <option v-for="docType in utilityStore.docTypes" :key="docType.id_tipo_documento"
+                                :value="docType.id_tipo_documento">
+                                {{ docType.tipo_documento }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="person-detail">
+                        <label>Número Documento:</label>
+                        <input type="text" :placeholder="person.documento_usuario" disabled :style="adminStyle()" />
+                    </div>
+                    <div class="person-detail">
+                        <label>Nombre(s):</label>
+                        <input type="text" id="miInput" :placeholder="person.nombre_usuario" :disabled="!isUserAdmin()"
+                            :style="adminStyle()" v-model="updatedPerson.nombre_usuario" />
+                    </div>
+                    <div class="person-detail">
+                        <label>Apellido(s):</label>
+                        <input type="text" :placeholder="person.apellido_usuario" :disabled="!isUserAdmin()"
+                            :style="adminStyle()" v-model="updatedPerson.apellido_usuario" />
+                    </div>
+                    <div class="person-detail">
+                        <label>Celular:</label>
+                        <input type="text" :placeholder="person.celular_usuario" :disabled="!isUserAdmin()"
+                            :style="adminStyle()" v-model="updatedPerson.celular_usuario" />
+                    </div>
+                    <div class="person-detail">
+                        <label>Estado:</label>
+                        <input type="text" :placeholder="person.estado_usuario" :disabled="!isUserAdmin()"
+                            :style="adminStyle()" v-model="updatedPerson.estado_usuario" />
+                    </div>
+                    <div class="person-detail">
+                        <label>Correo Electrónico:</label>
+                        <input type="email" :placeholder="person.direccion_usuario" :disabled="!isUserAdmin()"
+                            :style="adminStyle()" v-model="updatedPerson.direccion_usuario" />
+                    </div>
+                    <div class="person-detail">
+                        <label>Fecha de nacimiento:</label>
+                        <input v-if="!isEditingDate" class="birthdate-text" type="text" :disabled="!isUserAdmin()"
+                            :style="adminStyle()" @click="isEditingDate = true" :value="formattedDate" />
+                        <input v-else class="birthdate-date" type="date" :disabled="!isUserAdmin()" :style="adminStyle()"
+                            v-model="updatedPerson.fecha_nacimiento_usuario" :min="utilityStore.calculateDate(100)"
+                            :max="utilityStore.calculateDate(14)" />
+                    </div>
+                    <div class="person-detail">
+                        <label>Fecha de registro:</label>
+                        <input type="text" :placeholder="utilityStore.formatDate(person.fecha_registro_usuario)" disabled
+                            :style="adminStyle()" />
+                    </div>
+                    <input class="update-btn btn" v-if="isUserAdmin()" type="submit" value="Actualizar"
+                        :disabled="!isUserModified()" />
+                    <input class="reset-btn btn" v-if="isUserAdmin()" type="reset" value="Reestablecer"
+                        :disabled="!isUserModified()" />
+                </form>
+                <input class="close-btn btn" type="button" value="Volver" @click="closeDetails">
             </div>
-            <input class="update-btn btn" v-if="isUserAdmin()" type="button" value="Actualizar" @click="updateUser()"
-                :disabled="!isUserModified()">
-            <input class="close-btn btn" type="button" value="Volver" @click="closeDetails">
         </div>
     </div>
 </template>
   
 <script setup>
-import { ref, computed, watchEffect, onMounted } from 'vue';
+import { ref, computed, watchEffect, onMounted, onBeforeMount, onUnmounted } from 'vue';
 import { useUserStore } from '../store/UserStore';
 import { useAuthStore } from '../store/AuthStore';
+import DocTypeService from '../services/DocTypeService';
+import { useUtilityStore } from '../store/UtilityStore'
 
 const userStore = useUserStore();
 const authStore = useAuthStore();
+const utilityStore = useUtilityStore()
 
 const emits = defineEmits(['close']);
 const selectedImage = ref(null)
 const imageUrl = ref()
 const defaultImg = ref('src/assets/user.svg')
-const userLoaded = ref(false);
-const user = ref()
-const updatedUser = ref({
-    // tipo_documento_usuario: null,
+const personLoaded = ref(false);
+const person = ref()
+const isEditingDate = ref(false)
+const formattedDate = ref()
+
+const props = defineProps({
+    personId: Number,
+    show: Boolean,
+});
+
+const loadPersonDetails = async () => {
+    if (!personLoaded.value) {
+        person.value = userStore.getUserDetails(props.personId);
+        personLoaded.value = true;
+    }
+};
+
+const updatedPerson = ref({
+    tipo_documento_usuario: null,
     nombre_usuario: null,
     apellido_usuario: null,
     celular_usuario: null,
@@ -79,38 +117,28 @@ const updatedUser = ref({
     fecha_nacimiento_usuario: null,
 })
 
-const props = defineProps({
-    userId: Number,
-    show: Boolean,
-});
-
-const updateUser = async () => {
-    const response = await userStore.patchUser(props.userId, updatedUser.value)
+const updatePerson = async () => {
+    updatedPerson.value.fecha_nacimiento_usuario = utilityStore.formatISO(updatedPerson.value.fecha_nacimiento_usuario)
+    const response = await userStore.patchUser(props.personId, updatedPerson.value)
     await userStore.fetchPage()
     closeDetails()
 }
-
-const loadUserDetails = async () => {
-    if (!userLoaded.value) {
-        user.value = userStore.getUserDetails(props.userId);
-        userLoaded.value = true;
-    }
-};
 
 const adminStyle = () => {
     return { border: isUserAdmin() ? '1px solid lightgray' : 'none' }
 }
 
 const updateImg = async () => {
-    await userStore.updateImg(user.value.documento_usuario, selectedImage.value, authStore.token)
-    authStore.reloadOnlineUser()
+    await userStore.updateImg(person.value.documento_usuario, selectedImage.value, authStore.token)
+    authStore.reloadOnlinePerson()
 }
 
 const imageStyle = computed(() => ({
-    backgroundImage: user.value.foto_usuario ? `url(${user.value.foto_usuario})` : `url(${defaultImg.value})`,
+    backgroundImage: person.value.foto_usuario ? `url(${person.value.foto_usuario})` : `url(${defaultImg.value})`,
 }));
 
 const closeDetails = () => {
+    authStore.reloadOnlinePerson()
     emits('close');
 };
 
@@ -127,40 +155,68 @@ async function handleFileUpload(event) {
     await updateImg(imageUrl);
 }
 
-const getDate = (time) => {
-    if (time != null) {
-        return time.split("T")[0];
-    }
-    return "";
-}
-
 function isUserAdmin() {
     const isAdmin = authStore.onlineUser.rol.includes('administrador')
     return isAdmin
 }
 
-const isUserModified = () => {
-    for (var key in updatedUser.value) {
-        if (updatedUser.value[key] !== null && updatedUser.value[key] !== "") {
+function isUserModified() {
+    if (updatedPerson.value.tipo_documento_usuario !== person.value.tipo_documento_usuario) {
+        return true;
+    }
+    if (updatedPerson.value.fecha_nacimiento_usuario !== person.value.fecha_nacimiento_usuario) {
+        return true;
+    }
+
+    for (var key in updatedPerson.value) {
+        if ((key !== 'tipo_documento_usuario') && (key !== 'fecha_nacimiento_usuario') && (updatedPerson.value[key] !== null && updatedPerson.value[key] !== "")) {
             return true;
         }
     }
     return false;
 }
 
+const fetchDocTypes = async () => {
+    utilityStore.docTypes = await DocTypeService.fetchAllDocs()
+}
+
+function handleDocumentClick(event) {
+    const target = event.target
+    const isText = target.closest('.birthdate-text')
+    if (!isText) {
+        isEditingDate.value = false
+    }
+}
+
+function updateFormattedDate() {
+    formattedDate.value = utilityStore.formatDate(updatedPerson.value.fecha_nacimiento_usuario)
+}
 
 watchEffect(() => {
     if (!props.show) {
         closeDetails();
     }
+    updateFormattedDate()
+
 });
 
-onMounted(loadUserDetails);
+onMounted(() => {
+    loadPersonDetails()
+    updatedPerson.value.tipo_documento_usuario = person.value.tipo_documento_usuario
+    updatedPerson.value.fecha_nacimiento_usuario = person.value.fecha_nacimiento_usuario
+})
 
+onBeforeMount(() => {
+    fetchDocTypes()
+})
+
+onUnmounted(() => {
+    document.removeEventListener('click', handleDocumentClick);
+});
 </script>
   
 <style scoped>
-.user-details {
+.person-details {
     position: fixed;
     top: 0;
     left: 0;
@@ -198,13 +254,25 @@ h2 {
     cursor: pointer;
 }
 
-.user-detail {
+#doc-update-select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    padding: 5px;
+    font-weight: bold;
+}
+
+.person-detail {
     display: grid;
     gap: 10px;
     grid-template-columns: 1fr 1.5fr;
     grid-template-rows: repeat(1, 1fr);
     align-items: center;
     padding-top: 10px;
+}
+
+.birthdate-text {
+    font-weight: bold;
 }
 
 .user-photo {

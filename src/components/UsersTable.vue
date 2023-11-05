@@ -46,8 +46,9 @@
                             user.celular_usuario ||
                             noDataValue
                         }}</div>
-                    <div :class="{ 'user-cell': true, 'user-cell-empty': !user.fecha_registro_usuario }">{{
-                        getDate(user.fecha_registro_usuario) }}</div>
+                    <div :class="{ 'user-cell': true, 'user-cell-empty': !user.fecha_registro_usuario }"
+                        :title="getDate(user.fecha_registro_usuario)">{{
+                            getDate(user.fecha_registro_usuario) }}</div>
                     <div :class="{ 'user-cell': true, 'user-cell-empty': !user.estado_usuario }">{{ user.estado_usuario ||
                         noDataValue
                     }}
@@ -58,7 +59,7 @@
                             noDataValue }}</div>
                 </div>
             </div>
-            <UserDetails v-if="showDetails" :user-id="selectedUserId" :show="showDetails" @close="closeUserDetails" />
+            <UserDetails v-if="showDetails" :person-id="selectedUserId" :show="showDetails" @close="closeUserDetails" />
         </div>
         <div class="pagination">
             <label>{{ getActualRange() }}</label>
@@ -85,9 +86,11 @@
 import { ref, computed, onBeforeMount } from 'vue';
 import { useUserStore } from '../store/UserStore';
 import UserDetails from './UserDetails.vue'
+import { useUtilityStore } from '../store/UtilityStore';
 
 const noDataValue = 'Vacío';
 const userStore = useUserStore()
+const utilityStore = useUtilityStore()
 const searchTerm = ref("")
 const showDetails = ref(false);
 const selectedUserId = ref(null);
@@ -109,7 +112,7 @@ const closeUserDetails = () => {
 
 const getDate = (time) => {
     if (time != null) {
-        return time.split("T")[0];
+        return utilityStore.formatDate(time)
     }
     return noDataValue;
 }

@@ -58,7 +58,7 @@ export const useAuthStore = defineStore('auth', {
             this.onlineUser = { nick: null, rol: null, foto: null, token: null }
             this.password = null
         },
-        async reloadOnlineUser() {
+        async reloadOnlinePerson() {
             await this.updateOnlinePerson(this.onlineUser.nick, this.onlineUser.token)
         }
     },
