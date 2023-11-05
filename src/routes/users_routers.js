@@ -260,8 +260,7 @@ router.patch('/users/:document/update', auth.authenticateToken, async (req, res)
     const user = await orm.usuarios.findFirst({
         where: {
             documento_usuario: document
-        },
-        data: updates
+        }
     });
 
     if (!user) {
