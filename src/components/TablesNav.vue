@@ -1,11 +1,11 @@
 <template>
     <nav class="menu">
-        <div class="menu-item" @click="toggleMenu('users')">
+        <div class="menu-item" @click="toggleMenu('persons')">
             <i class="bi bi-people-fill"></i>
-            <p :class="{ active: tableStore.activeMenu === 'users' }">Usuarios</p>
+            <p :class="{ active: tableStore.activeMenu === 'persons' }">Personas</p>
         </div>
-        <div class="submenu" :class="{ 'expanded': isActiveMenu('users') }">
-            <p :class="{ active: tableStore.activeSubMenu == 'users' }" @click="activateSubMenu('users')">Ver
+        <div class="submenu" :class="{ 'expanded': isActiveMenu('persons') }">
+            <p :class="{ active: tableStore.activeSubMenu == 'users' }" @click="activateSubMenu('persons')">Ver
                 Lista</p>
             <p v-if="authStore.onlineUser.rol != null && authStore.onlineUser.rol.includes('admin')"
                 :class="{ active: tableStore.activeSubMenu === 'registrar' }">Registrar</p>
@@ -13,10 +13,21 @@
         <div v-if="authStore.onlineUser.rol != null && authStore.onlineUser.rol.includes('admin')" class="menu-item"
             @click="toggleMenu('roles')">
             <i class="bi bi-person-arms-up"></i>
-            <p :class="{ active: tableStore.activeMenu === 'roles' }">Roles</p>
+            <p :class="{ active: tableStore.activeMenu === 'roles' }">Usuarios</p>
         </div>
         <div class="submenu" :class="{ 'expanded': isActiveMenu('roles') }">
             <p :class="{ active: tableStore.activeSubMenu === 'roles' }" @click="activateSubMenu('roles')">Ver Lista
+            </p>
+            <p :class="{ active: tableStore.activeSubMenu === 'registrar' }">Registrar</p>
+        </div>
+        <div v-if="authStore.onlineUser.rol != null && authStore.onlineUser.rol.includes('admin')" class="menu-item"
+            @click="toggleMenu('only_roles')">
+            <i class="bi bi-person-arms-up"></i>
+            <p :class="{ active: tableStore.activeMenu === 'roles' }">Roles</p>
+        </div>
+        <div class="submenu" :class="{ 'expanded': isActiveMenu('only_roles') }">
+            <p :class="{ active: tableStore.activeSubMenu === 'only_roles' }" @click="activateSubMenu('only_roles')">Ver
+                Lista
             </p>
             <p :class="{ active: tableStore.activeSubMenu === 'registrar' }">Registrar</p>
         </div>

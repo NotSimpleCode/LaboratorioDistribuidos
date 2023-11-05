@@ -3,7 +3,7 @@ import { defineStore } from "pinia";
 export const useTableStore = defineStore('table', {
     state: () => ({
         activeMenu: null, // Se inicia sin ningun menú desplegado
-        activeSubMenu: 'users',
+        activeSubMenu: 'persons',
     }),
     getters: {
         isActiveMenu: (state) => (menu) => state.activeMenu === menu,

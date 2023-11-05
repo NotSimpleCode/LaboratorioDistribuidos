@@ -1,6 +1,6 @@
 <template>
     <section class="search-container">
-        <h1 class="table-title">Usuarios</h1>
+        <h1 class="table-title">Personas</h1>
         <div class="search-bar">
             <input class="search" type="text" placeholder="Buscar..." v-model="searchTerm" @input="filterUsers" />
             <input id="tableSearch" class="search-button" type="button" value="">

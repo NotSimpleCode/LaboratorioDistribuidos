@@ -12,8 +12,20 @@
 import LoginUser from '../components/LoginUser.vue'
 import RegisterUser from '../components/RegisterUser.vue'
 import { useAuthStore } from '../store/AuthStore';
+import { useUtilityStore } from '../store/UtilityStore';
+import { onMounted } from 'vue'
+import DocTypeService from '../services/DocTypeService';
 
 const authStore = useAuthStore()
+const utilityStore = useUtilityStore()
+
+const fetchDocTypes = async () => {
+    utilityStore.docTypes = await DocTypeService.fetchAllDocs()
+}
+
+onMounted(() => {
+    fetchDocTypes()
+})
 
 </script>
   
@@ -31,7 +43,7 @@ const authStore = useAuthStore()
 
 .fade-enter-active,
 .fade-leave-active {
-    transition: opacity 0.2s;
+    transition: opacity 0.1s;
 }
 
 .fade-enter,

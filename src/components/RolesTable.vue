@@ -1,8 +1,8 @@
 <template>
     <section class="search-container">
-        <h1 class="table-title">Roles</h1>
+        <h1 class="table-title">Usuarios</h1>
         <div class="search-bar">
-            <input class="search" type="text" placeholder="Buscar..." v-model="searchTerm" @input="filterRoles" />
+            <input class="search" type="text" placeholder="Buscar..." v-model="searchTerm" @input="filterUsers" />
             <input id="tableSearch" class="search-button" type="button" value="">
         </div>
         <div class="options">
@@ -72,7 +72,7 @@ const filteredRoles = computed(() => {
     }
 });
 
-const filterRoles = async () => {
+const filterUsers = async () => {
     const term = searchTerm.value.trim().toLowerCase();
     if (term === '') {
         connectionStore.fetchAll();

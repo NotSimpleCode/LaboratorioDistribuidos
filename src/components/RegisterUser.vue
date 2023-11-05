@@ -5,7 +5,7 @@
             <input type="text" v-model="newUser.nombre_usuario" placeholder="Nombre *" required />
             <input type="text" v-model="newUser.apellido_usuario" placeholder="Apellido *" required />
             <select v-model="newUser.tipo_documento_usuario">
-                <option v-for="doc in documentType" :key="doc.id_tipo_documento" :value="doc.id_tipo_documento">
+                <option v-for="doc in utilityStore.docTypes" :key="doc.id_tipo_documento" :value="doc.id_tipo_documento">
                     {{ doc.tipo_documento }}
                 </option>
             </select>
@@ -43,23 +43,15 @@
 </template>
   
 <script setup>
-import { ref, onBeforeMount } from 'vue';
-import DocTypeService from '../services/DocTypeService';
+import { ref } from 'vue';
 import { useAuthStore } from '../store/AuthStore';
+import { useUtilityStore } from '../store/UtilityStore';
 
 const authStore = useAuthStore()
+const utilityStore = useUtilityStore()
 const isDataFill = ref(false)
 const imageUrl = ref('../src/assets/user.svg')
 const isPasswordVisible = ref(false)
-// const userName = ref('');
-// const userLastname = ref('');
-// const userDocument = ref('');
-const documentType = ref();
-// const userCellphone = ref('');
-// const userAddress = ref('');
-// const userBirthdate = ref('');
-// const userAccountName = ref('')
-// const password = ref('')
 const newUser = ref({})
 const connection = ref({})
 
@@ -139,14 +131,8 @@ function handleFileUpload(event) {
     }
 }
 
-const fetchAllDocTypes = async () => {
-    // documentType.value = [{ id_tipo_documento: 1, tipo_documento: "CC" }, { id_tipo_documento: 2, tipo_documento: "TI" }, { id_tipo_documento: 3, tipo_documento: "CE" }, { id_tipo_documento: 4, tipo_documento: "OT" }]
-    documentType.value = await DocTypeService.fetchAllDocs()
-}
-
-onBeforeMount(() => {
-    fetchAllDocTypes()
-})
+// onBeforeMount(() => {
+// })
 
 </script>
   

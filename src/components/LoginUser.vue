@@ -13,10 +13,13 @@
 </template>
   
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useAuthStore } from '../store/AuthStore';
+import { useUserStore } from '../store/UserStore';
+import DocTypeService from '../services/DocTypeService';
 
 const authStore = useAuthStore()
+const userStore = useUserStore()
 const isPasswordVisible = ref(false)
 
 const showPassword = () => {
@@ -25,7 +28,7 @@ const showPassword = () => {
 
 const login = async () => {
     await authStore.login()
-};
+}
 
 </script>
   

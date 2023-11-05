@@ -12,12 +12,12 @@ export const useAuthStore = defineStore('auth', {
     }),
 
     actions: {
-        async updateOnlineUser(nickname, token) {
-            const user = await ConnectionService.fetchByUserNickname(nickname, token)
+        async updateOnlinePerson(nickname, token) {
+            const person = await ConnectionService.fetchByUserNickname(nickname, token)
             this.onlineUser = {
-                nick: user.nick_usuario,
-                rol: user.roles.nombre_rol,
-                foto: user.usuarios.foto_usuario,
+                nick: person.nick_usuario,
+                rol: person.roles.nombre_rol,
+                foto: person.usuarios.foto_usuario,
                 token: token
             }
         },
@@ -30,7 +30,7 @@ export const useAuthStore = defineStore('auth', {
             try {
                 const response = await LoginService.login({ nombre_usuario: this.onlineUser.nick, password_usuario: this.password });
                 if (response.status) {
-                    await this.updateOnlineUser(this.onlineUser.nick, response.token)
+                    await this.updateOnlinePerson(this.onlineUser.nick, response.token)
                     router.push({ name: 'information' });
                 }
             } catch (error) {
@@ -59,7 +59,7 @@ export const useAuthStore = defineStore('auth', {
             this.password = null
         },
         async reloadOnlineUser() {
-            await this.updateOnlineUser(this.onlineUser.nick, this.onlineUser.token)
+            await this.updateOnlinePerson(this.onlineUser.nick, this.onlineUser.token)
         }
     },
     persist: {

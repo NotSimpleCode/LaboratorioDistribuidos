@@ -3,9 +3,9 @@
         <AppHeader class="header">
         </AppHeader>
         <TablesNav class="navigator"></TablesNav>
-        <UsersTable v-if="tableStore.activeSubMenu === 'users'"></UsersTable>
+        <UsersTable v-if="tableStore.activeSubMenu === 'persons'"></UsersTable>
         <RolesTable v-else-if="tableStore.activeSubMenu === 'roles'"></RolesTable>
-        <OnlyRolesTable v-else-if="tableStore.activeSubMenu === 'Only_roles'"></OnlyRolesTable>
+        <OnlyRolesTable v-else-if="tableStore.activeSubMenu === 'only_roles'"></OnlyRolesTable>
     </main>
 </template>
 <script setup>

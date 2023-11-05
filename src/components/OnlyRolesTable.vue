@@ -18,38 +18,22 @@
                 <div class="role-cell">Descripción</div>
             </div>
             <div v-for="role in filteredRoles  " :key="role.id_rol" class="role-row row"> <!-- Filas de datos -->
-                <div class="role-cell">{{ role.roles.nombre_rol }}</div>
-                
-                <div :class="{ 'role-cell': true, 'role-cell-empty': !role.roles.estado_rol }">{{ role.roles.estado_rol ||
+                <div class="role-cell">{{ role.nombre_rol }}</div>
+
+                <div :class="{ 'role-cell': true, 'role-cell-empty': !role.estado_rol }">{{ role.estado_rol ||
                     noDataValue
                 }}
                 </div>
-                <div :class="{ 'role-cell': true, 'role-cell-empty': !role.roles.numero_personas_rol }">{{
-                    role.roles.numero_personas_rol ||
+                <div :class="{ 'role-cell': true, 'role-cell-empty': !role.numero_personas_roles }">{{
+                    role.numero_personas_roles ||
                     noDataValue }}
                 </div>
-                <div :class="{ 'role-cell': true, 'role-cell-empty': !role.roles.descripcion_rol }">{{
-                    role.roles.descripcion_rol ||
+                <div :class="{ 'role-cell': true, 'role-cell-empty': !role.descripcion_rol }">{{
+                    role.descripcion_rol ||
                     noDataValue }}
                 </div>
             </div>
-            <div class="pagination">
-                <!-- <label>{{ getActualRange() }}</label> -->
-                <div>
-                    <button @click="fastBackward()" :disabled="currentPage.valueOf === 1" class="nav-button"><i
-                            class="bi bi-chevron-double-left"></i></button>
-                    <button @click="previousPage" :disabled="roleStore.currentPage === 1" class="nav-button"><i
-                            class="bi bi-chevron-left"></i></button>
-                    <button v-for="  page   in   visiblePages  " :key="page" @click="changePage(page)"
-                        :class="{ 'page-button': true, 'current-page': page === roleStore.currentPage }">
-                        {{ page }}
-                    </button>
-                    <button @click="nextPage" :disabled="roleStore.currentPage === roleStore.totalPages"
-                        class="nav-button"><i class="bi bi-chevron-right"></i></button>
-                    <button @click="fastForward()" :disabled="currentPage.valueOf === 1" class="nav-button"><i
-                            class="bi bi-chevron-double-right"></i></button>
-                </div>
-            </div>
+
         </div>
     </div>
 </template>
@@ -61,93 +45,31 @@ import { useRoleStore } from '../store/RoleStore';
 const roleStore = useRoleStore()
 const noDataValue = 'Vacío';
 const searchTerm = ref("")
-const currentPage = computed(() => roleStore.currentPage);
-const totalPages = computed(() => roleStore.totalPages);
+// const currentPage = computed(() => roleStore.currentPage);
+// const totalPages = computed(() => roleStore.totalPages);
 
 const filteredRoles = computed(() => {
 
     if (searchTerm.value.trim() === '') {
-        return roleStore.connections;
+        return roleStore.roles;
     } else {
-        return roleStore.filteredConnections;
+        return roleStore.filteredRoles;
     }
 });
 
 const filterRoles = async () => {
     const term = searchTerm.value.trim().toLowerCase();
     if (term === '') {
-        roleStore.fetchAll();
+        roleStore.fetchRoles();
     } else {
         roleStore.filterRoles(term);
     }
 }
 
-const previousPage = () => {
-    if (currentPage.value > 1) {
-        roleStore.currentPage--;
-        fetchData();
-    }
-};
-
-const nextPage = () => {
-    if (currentPage.value < totalPages.value) {
-        roleStore.currentPage++;
-        fetchData();
-    }
-};
-
-const changePage = async (page) => {
-    roleStore.currentPage = page;
-    await roleStore.fetchPage();
-};
-
-const fetchData = async () => {
-    await roleStore.fetchPage();
-};
-
-const visiblePages = computed(() => {
-    const pageSize = 10; // Número de elementos por página
-
-    const start = Math.floor((currentPage.value - 1) / pageSize) * pageSize + 1;
-    const end = Math.min(start + pageSize - 1, totalPages.value);
-
-    const pages = [];
-    for (let i = start; i <= end; i++) {
-        pages.push(i);
-    }
-
-    return pages;
+onBeforeMount(() => {
+    roleStore.fetchRoles()
 })
 
-
-// const getActualRange = () => {
-//     const start = (currentPage.value * connectionStore.usersPerPage) - connectionStore.usersPerPage + 1;
-//     const end = currentPage.value * connectionStore.usersPerPage;
-//     return `${start}-${end} de ${connectionStore.totalUsers}`;
-// };
-
-const fastBackward = () => {
-    if (currentPage.value - 10 <= 1) {
-        roleStore.currentPage = 1
-    } else {
-        roleStore.currentPage -= 10
-    }
-    fetchData()
-}
-const fastForward = () => {
-    if (currentPage.value + 10 >= totalPages.value) {
-        roleStore.currentPage = totalPages.value
-    } else {
-        roleStore.currentPage += 10
-    }
-    fetchData()
-}
-
-onBeforeMount(() => {
-    roleStore.onInit()
-}),
-
-    fetchData()
 </script>
   
 <style scoped>
@@ -237,7 +159,7 @@ onBeforeMount(() => {
 
 .row {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     border-radius: 5px;
     background-color: var(--primary-color);
     padding: 10px;
