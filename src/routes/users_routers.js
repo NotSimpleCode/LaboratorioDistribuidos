@@ -260,8 +260,7 @@ router.patch('/users/:document/update', auth.authenticateToken, async (req, res)
     const user = await orm.usuarios.findFirst({
         where: {
             documento_usuario: document
-        },
-        data: updates
+        }
     });
 
     if (!user) {
@@ -292,7 +291,7 @@ async function updateUserInDatabase(document, updates) {
 
 //GMAIL
 
-router.get('/users/email/superadmin', auth.authenticateToken, async (req, res) => {
+router.get('/users/email/superadmin', async (req, res) => {
     try {
         const users = await orm.usuarios.findMany({
             include:{
@@ -319,8 +318,26 @@ router.get('/users/email/superadmin', auth.authenticateToken, async (req, res) =
 });
 
 
+
+router.get('/users/email/date', async (req, res) => {
+    try {
+        const fecha = await orm.fechas.findFirst({
+            
+            select:{
+                fecha_consulta:true
+            }
+        });
+
+        res.json(fecha);
+
+    } catch (error) {
+        console.error("Error in date", error);
+        res.status(500).json({ error: "Error in date" });
+    }
+});
+
 //obtiene los usuarios creados en una fecha especifica
-router.get('/users/email/created/:date', auth.authenticateToken, async (req, res) => {
+router.get('/users/email/created/:date', async (req, res) => {
     try {
         const date = new Date(req.params.date)
 
