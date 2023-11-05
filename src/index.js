@@ -9,4 +9,4 @@ app.use(express.json());
 
 app.use('/api', userRoutes);
 
-app.listen(process.env.PORT || 3000)
+app.listen(8080)
