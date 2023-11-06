@@ -8,7 +8,7 @@ class UserService extends CrudService {
 
     async fetchUserById(userId, token) {
         try {
-            const response = await axios.get(this.url + `/id/${userId}`,
+            const response = await axios.get(this.url + `/${userId}`,
                 {
                     headers: {
                         'Authorization': `${token}`
@@ -23,7 +23,7 @@ class UserService extends CrudService {
 
     async postRegisterUser(data) {
         try {
-            const response = await axios.post('http://localhost:3000/api/users/post', data,
+            const response = await axios.post('http://localhost:3000/api/users/', data,
                 {
                     headers: {
                         'Content-Type': 'Application/json',

@@ -14,17 +14,12 @@ import RegisterUser from '../components/RegisterUser.vue'
 import { useAuthStore } from '../store/AuthStore';
 import { useUtilityStore } from '../store/UtilityStore';
 import { onMounted } from 'vue'
-import DocTypeService from '../services/DocTypeService';
 
 const authStore = useAuthStore()
 const utilityStore = useUtilityStore()
 
-const fetchDocTypes = async () => {
-    utilityStore.docTypes = await DocTypeService.fetchAllDocs()
-}
-
 onMounted(() => {
-    fetchDocTypes()
+    utilityStore.fetchDocTypes()
 })
 
 </script>

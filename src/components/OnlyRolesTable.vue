@@ -17,7 +17,8 @@
                 <div class="role-cell"># Personas con este Rol</div>
                 <div class="role-cell">Descripción</div>
             </div>
-            <div v-for="role in filteredRoles  " :key="role.id_rol" class="role-row row"> <!-- Filas de datos -->
+            <div v-for="role in filteredRoles  " :key="role.id_rol" class="role-row row"
+                @click="showRoleDetails(role.id_rol)">
                 <div class="role-cell">{{ role.nombre_rol }}</div>
 
                 <div :class="{ 'role-cell': true, 'role-cell-empty': !role.estado_rol }">{{ role.estado_rol ||
@@ -33,7 +34,7 @@
                     noDataValue }}
                 </div>
             </div>
-
+            <RolesDetails v-if="showDetails" :role-id="selectedRoleId" :show="showDetails" @close="closeUserDetails" />
         </div>
     </div>
 </template>
@@ -41,12 +42,22 @@
 <script setup>
 import { ref, computed, onBeforeMount } from 'vue';
 import { useRoleStore } from '../store/RoleStore';
+import RolesDetails from './RolesDetails.vue';
 
 const roleStore = useRoleStore()
 const noDataValue = 'Vacío';
 const searchTerm = ref("")
-// const currentPage = computed(() => roleStore.currentPage);
-// const totalPages = computed(() => roleStore.totalPages);
+const showDetails = ref(false);
+const selectedRoleId = ref(null);
+
+const showRoleDetails = (userId) => {
+    selectedRoleId.value = userId;
+    showDetails.value = true;
+};
+
+const closeUserDetails = () => {
+    showDetails.value = false;
+};
 
 const filteredRoles = computed(() => {
 

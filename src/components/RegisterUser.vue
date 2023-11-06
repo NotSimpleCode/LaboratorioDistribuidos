@@ -1,22 +1,26 @@
 <template>
     <div class="container">
-        <div v-if="!isDataFill" class="register-form">
+        <form @submit.prevent="changeRegister" v-if="!isDataFill" class="register-form">
             <h1>Registro de Usuario</h1>
-            <input type="text" v-model="newUser.nombre_usuario" placeholder="Nombre *" required />
-            <input type="text" v-model="newUser.apellido_usuario" placeholder="Apellido *" required />
+            <input type="text" v-model="newUser.nombre_usuario" placeholder="Nombre *" :class="{ 'invalid': !isValidName }"
+                @input="validateName(newUser.nombre_usuario)" required />
+            <input type="text" v-model="newUser.apellido_usuario" placeholder="Apellido *"
+                :class="{ 'invalid': !isValidLastname }" @input="validateLastName(newUser.apellido_usuario)" required />
             <select v-model="newUser.tipo_documento_usuario">
                 <option v-for="doc in utilityStore.docTypes" :key="doc.id_tipo_documento" :value="doc.id_tipo_documento">
                     {{ doc.tipo_documento }}
                 </option>
             </select>
-            <input type="text" v-model="newUser.documento_usuario" placeholder="Documento de usuario *" required />
-            <input type="text" v-model="newUser.celular_usuario" placeholder="Celular *" required />
-            <input type="text" v-model="newUser.direccion_usuario" placeholder="Dirección *" required />
-            <input type="date" v-model="newUser.fecha_nacimiento_usuario" placeholder="Fecha de Nacimiento *" required />
-            <input type="button" @click="changeRegister" :disabled="!isPersonalDataComplete()" class="next-register-btn"
-                value="Siguiente" />
+            <input type="text" v-model="newUser.documento_usuario" placeholder="Documento de usuario *"
+                :class="{ 'invalid': !isValidDocument }" @input="validateDocument(newUser.documento_usuario)" required />
+            <input type="text" v-model="newUser.celular_usuario" placeholder="Celular *"
+                :class="{ 'invalid': !isValidCellphone }" @input="validateCellphone(newUser.celular_usuario)" required />
+            <input type="email" v-model="newUser.direccion_usuario" placeholder="Dirección *" required />
+            <input type="date" v-model="newUser.fecha_nacimiento_usuario" placeholder="Fecha de Nacimiento *"
+                :min="utilityStore.calculateDate(100)" :max="utilityStore.calculateDate(14)" required />
+            <input type="submit" :disabled="!isPersonalDataComplete()" class="next-register-btn" value="Siguiente" />
             <p>¿Ya tienes una cuenta? <a @click="authStore.toggleForm()">Iniciar sesión</a></p>
-        </div>
+        </form>
         <div v-else class="register-credentials-form">
             <h1>Registro de Usuario</h1>
             <div class="image-upload">
@@ -46,14 +50,24 @@
 import { ref } from 'vue';
 import { useAuthStore } from '../store/AuthStore';
 import { useUtilityStore } from '../store/UtilityStore';
+import { useUserStore } from '../store/UserStore';
+import router from '../router';
 
 const authStore = useAuthStore()
 const utilityStore = useUtilityStore()
+const userStore = useUserStore()
+
 const isDataFill = ref(false)
 const imageUrl = ref('../src/assets/user.svg')
+const selectedImage = ref(null)
 const isPasswordVisible = ref(false)
 const newUser = ref({})
 const connection = ref({})
+
+const isValidName = ref(true)
+const isValidLastname = ref(true)
+const isValidDocument = ref(true)
+const isValidCellphone = ref(true)
 
 newUser.value = {
     documento_usuario: null,
@@ -100,19 +114,46 @@ const registerUser = async () => {
     newUser.value.fecha_registro_usuario = new Date().toISOString()
     newUser.value.fecha_nacimiento_usuario = new Date(newUser.value.fecha_nacimiento_usuario).toISOString()
     newUser.value.documento_usuario = parseInt(newUser.value.documento_usuario)
+    newUser.value.celular_usuario = utilityStore.formatCellphoneNumber(newUser.value.celular_usuario)
     await authStore.registerUser(newUser.value)
 }
 
 const registerConnection = async () => {
     connection.value.id_usuario = newUser.value.documento_usuario
     await authStore.registerConnection(connection.value)
-    authStore.showLogin = true
+    await updateImg()
+    router.push({ name: 'information' });
 }
 
 
 const changeRegister = async () => {
     isDataFill.value = !isDataFill.value
     await registerUser()
+}
+
+const validateName = (name) => {
+    isValidName.value = utilityStore.validateTextField(name)
+}
+
+const validateLastName = (lastname) => {
+    isValidLastname.value = utilityStore.validateTextField(lastname)
+}
+
+const validateCellphone = (cell) => {
+    isValidCellphone.value = utilityStore.validateNumberField(cell)
+}
+
+const validateDocument = (document) => {
+    const doc = newUser.value.tipo_documento_usuario
+    if (doc === 1) {
+        isValidDocument.value = utilityStore.validateCCField(document)
+        return
+    } else if (doc === 2 || doc === 3) {
+        isValidDocument.value = utilityStore.validateNumberField(document)
+        return
+    } else {
+        isValidDocument.value = utilityStore.validateOTDocument(document)
+    }
 }
 
 const showPassword = () => {
@@ -126,13 +167,14 @@ function openFileInput() {
 function handleFileUpload(event) {
     const file = event.target.files[0];
     if (file) {
-        newUser.value.photo = file
+        selectedImage.value = file
         imageUrl.value = URL.createObjectURL(file);
     }
 }
 
-// onBeforeMount(() => {
-// })
+const updateImg = async () => {
+    await userStore.updateImg(newUser.value.documento_usuario, selectedImage.value)
+}
 
 </script>
   
@@ -206,12 +248,17 @@ select:focus {
     border-bottom: 2px solid rgba(255, 255, 255, 1);
 }
 
+input:focus:not(input[type="button"]).invalid {
+    border-bottom: 2px solid rgba(255, 0, 0, 0.8);
+}
+
 input::placeholder {
     color: rgba(255, 255, 255, 0.6);
     font-style: italic;
 }
 
-input[type="button"] {
+input[type="button"],
+input[type="submit"] {
     display: block;
     margin: 10px auto;
     padding: 10px 20px;
@@ -222,7 +269,8 @@ input[type="button"] {
     cursor: pointer;
 }
 
-input[type="button"]:hover {
+input[type="button"]:hover,
+input[type="submit"]:hover {
     background: #0073e6;
 }
 
@@ -246,6 +294,11 @@ a {
 
 a:hover {
     color: var(--secondary-color);
+}
+
+.invalid {
+    font-style: italic;
+    border-bottom: 2px solid rgba(255, 0, 0, 1);
 }
 
 .register-credentials-btn {

@@ -7,7 +7,7 @@ import router from '../router'
 export const useAuthStore = defineStore('auth', {
     state: () => ({
         showLogin: true,
-        onlineUser: { nick: null, rol: null, foto: null, token: null },
+        onlineUser: { nick: null, rol: null, foto: null, token: null, personId: null },
         password: null,
     }),
 
@@ -18,7 +18,8 @@ export const useAuthStore = defineStore('auth', {
                 nick: person.nick_usuario,
                 rol: person.roles.nombre_rol,
                 foto: person.usuarios.foto_usuario,
-                token: token
+                token: token,
+                personId: person.usuarios.documento_usuario
             }
         },
 
@@ -44,18 +45,14 @@ export const useAuthStore = defineStore('auth', {
         },
 
         async registerUser(newUser) {
-            console.log("nuevo ", newUser);
             const response = await UserService.postRegisterUser(newUser)
-            console.log("registrado ", response)
         },
         async registerConnection(connection) {
-            console.log("nuevo conn", connection);
             const response = await ConnectionService.postRegisterConnection(connection, this.onlineUser.token)
-            console.log("registrado conn ", response)
 
         },
         logout() {
-            this.onlineUser = { nick: null, rol: null, foto: null, token: null }
+            this.onlineUser = { nick: null, rol: null, foto: null, token: null, personId: null }
             this.password = null
         },
         async reloadOnlinePerson() {

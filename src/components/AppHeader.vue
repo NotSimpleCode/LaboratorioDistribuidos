@@ -18,10 +18,11 @@
                 </div>
                 <div class="user-menu" v-if="isMenuVisible">
                     <ul>
-                        <li @click="editProfile">Editar perfil</li>
+                        <li @click="showUserDetails(authStore.onlineUser.personId)">Editar perfil</li>
                         <li @click="logout">Cerrar sesión</li>
                     </ul>
                 </div>
+                <UserDetails v-if="showDetails" :person-id="selectedUserId" :show="showDetails" @close="closeUserDetails" />
             </div>
         </div>
     </header>
@@ -31,12 +32,16 @@
 import { ref, computed } from 'vue';
 import { useAuthStore } from '../store/AuthStore'
 import router from '../router'
+import UserDetails from './UserDetails.vue'
 
 const isMenuVisible = ref(false)
 const authStore = useAuthStore()
 let isFocused = ref(false)
 let searchIcon = ref('../src/assets/search-white.svg')
 const actualImg = computed(() => authStore.onlineUser.foto ? authStore.onlineUser.foto : '../src/assets/user.svg')
+
+const showDetails = ref(false);
+const selectedUserId = ref(null);
 
 const onSearchFocus = () => {
     isFocused.value = true;
@@ -56,15 +61,21 @@ const toggleMenu = () => {
     isMenuVisible.value = !isMenuVisible.value;
 }
 
-const editProfile = () => {
-    router.push({ name: 'updateForm' });
-}
+const showUserDetails = (userId) => {
+    selectedUserId.value = userId;
+    showDetails.value = true;
+};
+
+const closeUserDetails = () => {
+    showDetails.value = false;
+};
+
 
 const logout = () => {
-    authStore.token = null
     router.push({ name: "login" })
     authStore.logout()
 }
+
 
 </script>
   

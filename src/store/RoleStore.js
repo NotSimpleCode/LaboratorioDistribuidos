@@ -23,7 +23,13 @@ export const useRoleStore = defineStore('roles', {
                 const rolName = rol.nombre_rol.toLowerCase();
                 return rolName.includes(searchTerm);
             });
-        }
+        },
+        async getRoleById(idRol) {
+            return await RoleService.fetchRoleById(idRol, this.getToken())
+        },
+        async updateRole(roleId, data) {
+            return await RoleService.patchRole(roleId, data, this.getToken())
+        },
 
     }
 })

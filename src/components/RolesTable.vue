@@ -60,6 +60,7 @@ import { useConnectionStore } from '../store/ConnStore';
 const connectionStore = useConnectionStore()
 const noDataValue = 'Vacío';
 const searchTerm = ref("")
+
 const currentPage = computed(() => connectionStore.currentPage);
 const totalPages = computed(() => connectionStore.totalPages);
 
@@ -144,9 +145,8 @@ const fastForward = () => {
 
 onBeforeMount(() => {
     connectionStore.onInit()
-}),
-
-    fetchData()
+})
+fetchData()
 </script>
   
 <style scoped>
@@ -284,13 +284,7 @@ onBeforeMount(() => {
 }
 
 .role-row {
-    cursor: pointer;
     height: 50px;
-}
-
-.role-row:hover {
-    background-color: rgba(0, 123, 255, 0.05);
-    border-left: 3px solid var(--third-color);
 }
 
 .pagination {

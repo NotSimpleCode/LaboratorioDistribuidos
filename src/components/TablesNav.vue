@@ -5,10 +5,10 @@
             <p :class="{ active: tableStore.activeMenu === 'persons' }">Personas</p>
         </div>
         <div class="submenu" :class="{ 'expanded': isActiveMenu('persons') }">
-            <p :class="{ active: tableStore.activeSubMenu == 'users' }" @click="activateSubMenu('persons')">Ver
+            <p :class="{ active: tableStore.activeSubMenu == 'persons' }" @click="activateSubMenu('persons')">Ver
                 Lista</p>
             <p v-if="authStore.onlineUser.rol != null && authStore.onlineUser.rol.includes('admin')"
-                :class="{ active: tableStore.activeSubMenu === 'registrar' }">Registrar</p>
+                :class="{ active: tableStore.activeSubMenu === 'registrar' }" @click="openRegister()">Registrar</p>
         </div>
         <div v-if="authStore.onlineUser.rol != null && authStore.onlineUser.rol.includes('admin')" class="menu-item"
             @click="toggleMenu('roles')">
@@ -22,7 +22,7 @@
         </div>
         <div v-if="authStore.onlineUser.rol != null && authStore.onlineUser.rol.includes('admin')" class="menu-item"
             @click="toggleMenu('only_roles')">
-            <i class="bi bi-person-arms-up"></i>
+            <i class="bi bi-person-vcard"></i>
             <p :class="{ active: tableStore.activeMenu === 'roles' }">Roles</p>
         </div>
         <div class="submenu" :class="{ 'expanded': isActiveMenu('only_roles') }">
@@ -35,12 +35,24 @@
 </template>
   
 <script setup>
-import { onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useTableStore } from '../store/TableStore';
 import { useAuthStore } from '../store/AuthStore';
 
 const authStore = useAuthStore()
 const tableStore = useTableStore()
+
+const showDetails = ref(false);
+const selectedUserId = ref(null);
+
+const showUserDetails = (userId) => {
+    selectedUserId.value = userId;
+    showDetails.value = true;
+};
+
+const closeUserDetails = () => {
+    showDetails.value = false;
+};
 
 const toggleMenu = (menu) => {
     tableStore.toggleMenu(menu);

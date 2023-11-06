@@ -27,36 +27,36 @@
                     <div class="user-cell user-photo" :style="getUserImageStyle(user.foto_usuario)">
                     </div>
                     <div :class="{ 'user-cell': true, 'user-cell-empty': !user.documento_usuario }">{{
-                        user.documento_usuario ||
-                        noDataValue }}</div>
+                                            user.documento_usuario ||
+                                            noDataValue }}</div>
                     <div :class="{ 'user-cell': true, 'user-cell-empty': !user.nombre_usuario }"
                         :title="user.nombre_usuario">{{
-                            user.nombre_usuario ||
-                            noDataValue
-                        }}
+                                                user.nombre_usuario ||
+                                                noDataValue
+                                                }}
                     </div>
                     <div :class="{ 'user-cell': true, 'user-cell-empty': !user.apellido_usuario }"
                         :title="user.apellido_usuario">{{
-                            user.apellido_usuario ||
-                            noDataValue
-                        }}</div>
+                                                user.apellido_usuario ||
+                                                noDataValue
+                                                }}</div>
                     <div :class="{ 'user-cell': true, 'user-cell-empty': !user.celular_usuario }"
                         :title="user.celular_usuario">
                         {{
-                            user.celular_usuario ||
-                            noDataValue
-                        }}</div>
+                                                user.celular_usuario ||
+                                                noDataValue
+                                                }}</div>
                     <div :class="{ 'user-cell': true, 'user-cell-empty': !user.fecha_registro_usuario }"
                         :title="getDate(user.fecha_registro_usuario)">{{
-                            getDate(user.fecha_registro_usuario) }}</div>
+                                                getDate(user.fecha_registro_usuario) }}</div>
                     <div :class="{ 'user-cell': true, 'user-cell-empty': !user.estado_usuario }">{{ user.estado_usuario ||
-                        noDataValue
-                    }}
+                                            noDataValue
+                                            }}
                     </div>
                     <div :class="{ 'user-cell': true, 'user-cell-empty': !user.direccion_usuario }"
                         :title="user.direccion_usuario">
                         {{ user.direccion_usuario ||
-                            noDataValue }}</div>
+                                                noDataValue }}</div>
                 </div>
             </div>
             <UserDetails v-if="showDetails" :person-id="selectedUserId" :show="showDetails" @close="closeUserDetails" />

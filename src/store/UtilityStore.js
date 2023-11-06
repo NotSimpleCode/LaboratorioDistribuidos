@@ -2,14 +2,15 @@ import { defineStore } from 'pinia';
 import { format, utcToZonedTime } from 'date-fns-tz'
 import { subYears, addDays } from 'date-fns'
 import { es } from 'date-fns/locale'
+import DocTypeService from '../services/DocTypeService';
 
 export const useUtilityStore = defineStore('utility', {
     state: () => ({
-        docTypes: [],
+        docTypes: { 'CC': 1, 'TI': 2, 'CE': 3, 'OT': 4 },
         localeFormat: "dd MMMM, yyyy",
         dateRegion: { timeZone: 'America/Bogota', locale: es },
         defaultFormat: "yyyy-MM-dd",
-        format: { year: "numeric", month: "short", day: "numeric" }
+        status: ['A', 'B', 'C'],
         // maxAge: 100,
         // minAge: 14
     }),
@@ -35,11 +36,41 @@ export const useUtilityStore = defineStore('utility', {
             }
             return ""
         },
+        formatCellphoneNumber(number) {
+            return "+57 " + number.slice(0, 3) + " " + number.slice(3, 6) + " " + number.slice(6);
+        },
         calculateDate(years) {
             let actualDate = new Date();
             let date = subYears(actualDate, years);
             return format(date, this.defaultFormat);
-        }
+        },
+        validateTextField(input) {
+            const regex = /^(?!\s)[a-zA-ZáéíóúÁÉÍÓÚñÑ]*(?:\s[a-zA-ZáéíóúÁÉÍÓÚñÑ]+)*(?<!\s)$/
+            return regex.test(input);
+        },
 
+        validateNumberField(input) {
+            return /^\d{0}$|^\d{10}$/.test(input) && !isNaN(input)
+        },
+        validateCCField(input) {
+            return /^\d{8}$|^\d{10}$/.test(input) && !isNaN(input)
+        },
+        validateOTDocument(input) {
+            const regex = /^(?!\s)[\w\s]{10}(?<!\s)$/
+            return regex.test(input);
+        },
+        validateStatus(input) {
+            if (input === "") {
+                return true;
+            }
+            console.log(input);
+            return this.status.includes(input);
+        },
+        async fetchDocTypes() {
+            const docs = await DocTypeService.fetchAllDocs();
+            if (docs) {
+                this.docTypes = docs;
+            }
+        }
     }
 });

@@ -7,7 +7,7 @@ class ConnectionService extends CrudService {
 
     async fetchByUserId(userId, token) {
         try {
-            const response = await axios.get(this.url + `${userId}`,
+            const response = await axios.get(this.url + `/${userId}`,
                 {
                     headers: {
                         'Authorization': `${token}`

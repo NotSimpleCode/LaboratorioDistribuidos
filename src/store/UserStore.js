@@ -43,7 +43,6 @@ export const useUserStore = defineStore('user', {
         },
         async updateImg(userId, img, token) {
             await UploadService.updateImg(userId, img, token)
-            this.fetchPage()
         },
         async fetchUserById(userId) {
             return await UserService.fetchUserById(userId, this.getToken())

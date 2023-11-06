@@ -1,7 +1,7 @@
 <template>
     <div class="person-details" v-if="show && personLoaded">
         <div class="details-content">
-            <h2>Modificar/Ver Datos de Persona</h2>
+            <h2><span v-if="isUserAdmin()">Modificar/</span>Ver Datos de Persona</h2>
             <div class="image-upload">
                 <label for="fileInput" class="image-preview user-photo" @click.prevent="openFileInput" :style="imageStyle">
                     <div class=" overlay">
@@ -11,7 +11,7 @@
                 <input type="file" id="fileInput" accept="image/*" @change="handleFileUpload" style="display: none" />
             </div>
             <div v-if="person" class="user-content">
-                <form @submit.prevent="updatePerson">
+                <form @submit.prevent="updatePerson" id="personForm">
                     <div class="person-detail" id="doc-update">
                         <label>Tipo de documento:</label>
                         <select v-model="updatedPerson.tipo_documento_usuario" :disabled="!isUserAdmin()"
@@ -29,22 +29,27 @@
                     <div class="person-detail">
                         <label>Nombre(s):</label>
                         <input type="text" id="miInput" :placeholder="person.nombre_usuario" :disabled="!isUserAdmin()"
-                            :style="adminStyle()" v-model="updatedPerson.nombre_usuario" />
+                            :style="adminStyle()" v-model="updatedPerson.nombre_usuario"
+                            :class="{ 'invalid': !isNameValid }" @input="validateName(updatedPerson.nombre_usuario)" />
                     </div>
                     <div class="person-detail">
                         <label>Apellido(s):</label>
                         <input type="text" :placeholder="person.apellido_usuario" :disabled="!isUserAdmin()"
-                            :style="adminStyle()" v-model="updatedPerson.apellido_usuario" />
+                            :style="adminStyle()" v-model="updatedPerson.apellido_usuario"
+                            :class="{ 'invalid': !isLastNameValid }"
+                            @input="validateLastName(updatedPerson.apellido_usuario)" />
                     </div>
                     <div class="person-detail">
                         <label>Celular:</label>
                         <input type="text" :placeholder="person.celular_usuario" :disabled="!isUserAdmin()"
-                            :style="adminStyle()" v-model="updatedPerson.celular_usuario" />
+                            :style="adminStyle()" v-model="updatedPerson.celular_usuario" id="cel-input"
+                            :class="{ 'invalid': !isValidCel }" @input="validateCellphone(updatedPerson.celular_usuario)" />
                     </div>
                     <div class="person-detail">
                         <label>Estado:</label>
                         <input type="text" :placeholder="person.estado_usuario" :disabled="!isUserAdmin()"
-                            :style="adminStyle()" v-model="updatedPerson.estado_usuario" />
+                            :style="adminStyle()" v-model="updatedPerson.estado_usuario"
+                            :class="{ 'invalid': !isValidStatus }" @input="validateStatus(updatedPerson.estado_usuario)" />
                     </div>
                     <div class="person-detail">
                         <label>Correo Electrónico:</label>
@@ -64,13 +69,12 @@
                         <input type="text" :placeholder="utilityStore.formatDate(person.fecha_registro_usuario)" disabled
                             :style="adminStyle()" />
                     </div>
-                    <input class="update-btn btn" v-if="isUserAdmin()" type="submit" value="Actualizar"
-                        :disabled="!isUserModified()" />
-                    <input class="reset-btn btn" v-if="isUserAdmin()" type="reset" value="Reestablecer"
-                        :disabled="!isUserModified()" />
+
                 </form>
-                <input class="close-btn btn" type="button" value="Volver" @click="closeDetails">
             </div>
+            <input class="update-btn btn" v-if="isUserAdmin()" type="submit" form="personForm" value="Actualizar"
+                :disabled="!isDataValid()" />
+            <input class="close-btn btn" type="button" :value="isUserAdmin() ? 'Cancelar' : 'Volver'" @click="closeDetails">
         </div>
     </div>
 </template>
@@ -95,17 +99,16 @@ const person = ref()
 const isEditingDate = ref(false)
 const formattedDate = ref()
 
+const isNameValid = ref(true)
+const isLastNameValid = ref(true)
+const isValidCel = ref(true)
+const isValidStatus = ref(true)
+
 const props = defineProps({
     personId: Number,
     show: Boolean,
 });
 
-const loadPersonDetails = async () => {
-    if (!personLoaded.value) {
-        person.value = userStore.getUserDetails(props.personId);
-        personLoaded.value = true;
-    }
-};
 
 const updatedPerson = ref({
     tipo_documento_usuario: null,
@@ -117,11 +120,25 @@ const updatedPerson = ref({
     fecha_nacimiento_usuario: null,
 })
 
+const loadPersonDetails = async () => {
+    if (!personLoaded.value) {
+        person.value = await userStore.fetchUserById(props.personId);
+        updatedPerson.value.tipo_documento_usuario = person.value.tipo_documento_usuario
+        updatedPerson.value.fecha_nacimiento_usuario = person.value.fecha_nacimiento_usuario
+        personLoaded.value = true;
+    }
+};
+
 const updatePerson = async () => {
-    updatedPerson.value.fecha_nacimiento_usuario = utilityStore.formatISO(updatedPerson.value.fecha_nacimiento_usuario)
+    if (updatedPerson.value.fecha_nacimiento_usuario !== null) {
+        updatedPerson.value.fecha_nacimiento_usuario = utilityStore.formatISO(updatedPerson.value.fecha_nacimiento_usuario)
+    }
+    if (updatedPerson.value.celular_usuario !== null) {
+        updatedPerson.value.celular_usuario = utilityStore.formatCellphoneNumber(updatedPerson.value.celular_usuario)
+    }
     const response = await userStore.patchUser(props.personId, updatedPerson.value)
-    await userStore.fetchPage()
     closeDetails()
+    await userStore.fetchPage()
 }
 
 const adminStyle = () => {
@@ -130,6 +147,7 @@ const adminStyle = () => {
 
 const updateImg = async () => {
     await userStore.updateImg(person.value.documento_usuario, selectedImage.value, authStore.token)
+    await userStore.fetchPage()
     authStore.reloadOnlinePerson()
 }
 
@@ -157,9 +175,16 @@ async function handleFileUpload(event) {
 
 function isUserAdmin() {
     const isAdmin = authStore.onlineUser.rol.includes('administrador')
-    return isAdmin
+    const isOnlineUser = authStore.onlineUser.personId === props.personId
+    return isAdmin || isOnlineUser
 }
 
+//validar que los campos cambiados sean validos
+function isDataValid() {
+    return (isUserModified() && isNameValid.value && isLastNameValid.value && isValidCel.value && isValidStatus.value)
+}
+
+//Validar que hayan cambios en los campos
 function isUserModified() {
     if (updatedPerson.value.tipo_documento_usuario !== person.value.tipo_documento_usuario) {
         return true;
@@ -174,6 +199,21 @@ function isUserModified() {
         }
     }
     return false;
+}
+
+const validateName = (name) => {
+    isNameValid.value = utilityStore.validateTextField(name)
+}
+
+const validateLastName = (lastname) => {
+    isLastNameValid.value = utilityStore.validateTextField(lastname)
+}
+
+const validateCellphone = (cell) => {
+    isValidCel.value = utilityStore.validateNumberField(cell)
+}
+const validateStatus = (status) => {
+    isValidStatus.value = utilityStore.validateStatus(status)
 }
 
 const fetchDocTypes = async () => {
@@ -202,12 +242,10 @@ watchEffect(() => {
 
 onMounted(() => {
     loadPersonDetails()
-    updatedPerson.value.tipo_documento_usuario = person.value.tipo_documento_usuario
-    updatedPerson.value.fecha_nacimiento_usuario = person.value.fecha_nacimiento_usuario
 })
 
 onBeforeMount(() => {
-    fetchDocTypes()
+    utilityStore.fetchDocTypes()
 })
 
 onUnmounted(() => {
@@ -383,6 +421,18 @@ input::placeholder:focus {
 
 .close-btn {
     grid-row: 4/5;
+}
+
+.invalid {
+    font-style: italic;
+    background-color: rgba(255, 0, 0, 0.5);
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
 }
 </style>
   
