@@ -1,0 +1,129 @@
+[33mcommit 895e34121e5c7e7dc8e6abad9b9c21a64e56bcd8[m[33m ([m[1;36mHEAD -> [m[1;32mdesarrollo[m[33m, [m[1;31morigin/desarrollo[m[33m)[m
+Author: DIER10 <diego.beltran@uptc.edu.co>
+Date:   Mon Oct 30 23:27:32 2023 -0500
+
+    Se agregaron las funciones para actualizar usuario
+
+[33mcommit c435067a673d78301f2ca0a82cd1944372317715[m
+Author: DIER10 <diego.beltran@uptc.edu.co>
+Date:   Mon Oct 23 17:28:53 2023 -0500
+
+    Se agregaron más funciones
+
+[33mcommit 1f13cdf766fafbdbf8b20c718ee29972211954ec[m
+Merge: bea82c3 6e723cd
+Author: NotSimpleCode <onejobsdiego@gmail.com>
+Date:   Sat Oct 21 19:39:50 2023 -0500
+
+    merge fix 2
+
+[33mcommit bea82c313bd95b51786c193b2290a9a4d4feae15[m
+Author: NotSimpleCode <onejobsdiego@gmail.com>
+Date:   Sat Oct 21 19:38:00 2023 -0500
+
+    bug fix
+
+[33mcommit 6e723cd43c23de4eb9e81636c4517a6c2611295d[m
+Author: DIER10 <diego.beltran@uptc.edu.co>
+Date:   Wed Oct 18 18:44:06 2023 -0500
+
+    paginación a 20 items por pag. Roles incluidos en la petición usuarios_roles
+
+[33mcommit 4fd3072af72db5bd279ce06c3ea4fc5ad50ff878[m
+Author: NotSimpleCode <onejobsdiego@gmail.com>
+Date:   Wed Oct 18 13:51:05 2023 -0500
+
+    login bug fix
+
+[33mcommit e3dd20c4f15c2a0e30a8cac3eb989b661b424da8[m
+Author: JorgeMz <jorge.martinez09@uptc.edu.co>
+Date:   Wed Oct 18 09:47:19 2023 -0500
+
+    parcialmente con blob storage
+
+[33mcommit a5b7d3f42e4603eadb31039b600fbdf1c868f5d9[m
+Merge: 078ba1f 45d40b1
+Author: JorgeMz <jorge.martinez09@uptc.edu.co>
+Date:   Wed Oct 18 07:50:36 2023 -0500
+
+    Merge branch 'desarrollo' of https://github.com/NotSimpleCode/LaboratorioDistribuidos into desarrollo
+
+[33mcommit 078ba1ff1bca701de3cdbf9462899bc3f5cca6fe[m
+Author: JorgeMz <jorge.martinez09@uptc.edu.co>
+Date:   Wed Oct 18 07:46:53 2023 -0500
+
+    add jwt
+
+[33mcommit 45d40b15c72cb56de93d2ea5d856f669e44542c5[m
+Author: NotSimpleCode <onejobsdiego@gmail.com>
+Date:   Tue Oct 17 19:16:50 2023 -0500
+
+    conteo
+
+[33mcommit 9333bd19927b53a308f702b4f4171ad3c3c8e8d1[m
+Author: NotSimpleCode <onejobsdiego@gmail.com>
+Date:   Tue Oct 17 17:37:46 2023 -0500
+
+    bug fix
+
+[33mcommit 3ee00a6d1d405016d06c1a3bb41366ef627fabab[m
+Merge: 6456ff3 e092bd3
+Author: NotSimpleCode <onejobsdiego@gmail.com>
+Date:   Tue Oct 17 17:14:17 2023 -0500
+
+    merge solution
+
+[33mcommit 6456ff3fe0fed83b9291f06489ddcfdb3cf697f0[m
+Author: NotSimpleCode <onejobsdiego@gmail.com>
+Date:   Tue Oct 17 17:03:07 2023 -0500
+
+    implementacion de back sin jwt ni blob
+
+[33mcommit e092bd32964fe6632ad56653f670be7fe7af90e6[m
+Merge: 7cdb346 b982899
+Author: JorgeMz <jorge.martinez09@uptc.edu.co>
+Date:   Mon Oct 9 16:41:28 2023 -0500
+
+    Merge branch 'desarrollo' of https://github.com/NotSimpleCode/LaboratorioDistribuidos into desarrollo
+
+[33mcommit 7cdb3469eadc35b4e04602e06882508fae5b4c18[m
+Author: JorgeMz <jorge.martinez09@uptc.edu.co>
+Date:   Mon Oct 9 16:32:52 2023 -0500
+
+    revisión de las peticiones y roles
+
+[33mcommit b9828994879bc5f666e928fea2448d39658121f7[m
+Author: NotSimpleCode <onejobsdiego@gmail.com>
+Date:   Sun Oct 8 13:25:52 2023 -0500
+
+    Conexion con MYSQL AZURE
+
+[33mcommit 6f536936395f0f54596b7c79702a2f262f075465[m
+Author: JorgeMz <jorge.martinez09@uptc.edu.co>
+Date:   Sun Sep 17 11:43:41 2023 -0500
+
+    Upload ORM - SQlite
+
+[33mcommit e0fd5b287ff8a9a205050aa0684dd4483555fb7f[m
+Author: JorgeMz <jorge.martinez09@uptc.edu.co>
+Date:   Sat Sep 16 10:52:33 2023 -0500
+
+    actualización - bd(no original) sin orm
+
+[33mcommit 684641585c2d5e1ec6f3c8625c0c279dd18b71c7[m
+Author: JorgeMz <jorge.martinez09@uptc.edu.co>
+Date:   Wed Sep 13 18:44:59 2023 -0500
+
+    Segunda version
+
+[33mcommit 218f1f98abe4202060177e2086c90fcb70b0e4d7[m
+Author: JorgeMz <jorge.martinez09@uptc.edu.co>
+Date:   Wed Sep 13 10:09:02 2023 -0500
+
+    upload proyect contacts con mysql
+
+[33mcommit d1fcae1a289f9718dfb80c56a2d8fe23bcff00ad[m[33m ([m[1;31morigin/produccion[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: NotSimpleCode <onejobsdiego@gmail.com>
+Date:   Tue Sep 12 19:26:45 2023 -0500
+
+    inicial

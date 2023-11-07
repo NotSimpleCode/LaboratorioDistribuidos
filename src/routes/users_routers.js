@@ -260,8 +260,7 @@ router.patch('/users/:document/update', auth.authenticateToken, async (req, res)
     const user = await orm.usuarios.findFirst({
         where: {
             documento_usuario: document
-        },
-        data: updates
+        }
     });
 
     if (!user) {
@@ -295,21 +294,21 @@ async function updateUserInDatabase(document, updates) {
 router.get('/users/email/superadmin', auth.authenticateToken, async (req, res) => {
     try {
         const users = await orm.usuarios.findMany({
-            include:{
-                usuarios_roles:true
+            include: {
+                usuarios_roles: true
             },
-            where:{
-                usuarios_roles:{
+            where: {
+                usuarios_roles: {
                     some: {
                         id_rol: 2 // Reemplaza 'tuID' con el ID que estás buscando superadmin(2)
                     }
                 }
             }
-            
+
         });
 
         const direcciones = users.map(user => user.direccion_usuario);
-        
+
         res.json(direcciones);
 
     } catch (error) {
@@ -325,14 +324,14 @@ router.get('/users/email/created/:date', auth.authenticateToken, async (req, res
         const date = new Date(req.params.date)
 
         const usersCreated = await orm.usuarios.findMany({
-            where:{
-                fecha_registro_usuario : date
+            where: {
+                fecha_registro_usuario: date
             }
-            
+
         });
 
-        
-        
+
+
         res.json(usersCreated);
 
     } catch (error) {
