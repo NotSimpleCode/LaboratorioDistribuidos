@@ -321,20 +321,19 @@ router.get('/users/email/superadmin', async (req, res) => {
 
 router.get('/users/email/date', async (req, res) => {
     try {
-        const fecha = await orm.fechas.findFirst({
-            
-            select:{
-                fecha_consulta:true
-            }
-        });
+        const fecha = new Date();
+        const fechaISO = fecha.toISOString();
+        const fechaSinHora = fechaISO.split('T')[0];
 
-        res.json(fecha);
+        res.json({ fecha: fechaSinHora });
 
     } catch (error) {
         console.error("Error in date", error);
         res.status(500).json({ error: "Error in date" });
     }
 });
+
+
 
 //obtiene los usuarios creados en una fecha especifica
 router.get('/users/email/created/:date', async (req, res) => {
