@@ -24,7 +24,7 @@
                     </div>
                     <div class="person-detail">
                         <label>Número Documento:</label>
-                        <input type="text" :placeholder="person.documento_usuario" disabled :style="adminStyle()" />
+                        <input type="text" :value="person.documento_usuario" disabled :style="adminStyle()" />
                     </div>
                     <div class="person-detail">
                         <label>Nombre(s):</label>
@@ -61,8 +61,9 @@
                         <input v-if="!isEditingDate" class="birthdate-text" type="text" :disabled="!isUserAdmin()"
                             :style="adminStyle()" @click="isEditingDate = true" :value="formattedDate" />
                         <input v-else class="birthdate-date" type="date" :disabled="!isUserAdmin()" :style="adminStyle()"
-                            v-model="updatedPerson.fecha_nacimiento_usuario" :min="utilityStore.calculateDate(100)"
-                            :max="utilityStore.calculateDate(14)" />
+                            v-model="updatedPerson.fecha_nacimiento_usuario"
+                            :min="utilityStore.calculateDate(utilityStore.maxAge)"
+                            :max="utilityStore.calculateDate(utilityStore.minAge)" />
                     </div>
                     <div class="person-detail">
                         <label>Fecha de registro:</label>
@@ -174,9 +175,8 @@ async function handleFileUpload(event) {
 }
 
 function isUserAdmin() {
-    const isAdmin = authStore.onlineUser.rol.includes('administrador')
     const isOnlineUser = authStore.onlineUser.personId === props.personId
-    return isAdmin || isOnlineUser
+    return authStore.isUserAdmin() || isOnlineUser
 }
 
 //validar que los campos cambiados sean validos

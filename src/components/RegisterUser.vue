@@ -1,6 +1,6 @@
 <template>
     <div class="container">
-        <form @submit.prevent="changeRegister" v-if="!isDataFill" class="register-form">
+        <form @submit.prevent="changeRegister" v-if="!isDataFill && !authStore.showUserRegister" class="register-form">
             <h1>Registro de Usuario</h1>
             <input type="text" v-model="newUser.nombre_usuario" placeholder="Nombre *" :class="{ 'invalid': !isValidName }"
                 @input="validateName(newUser.nombre_usuario)" required />
@@ -17,9 +17,11 @@
                 :class="{ 'invalid': !isValidCellphone }" @input="validateCellphone(newUser.celular_usuario)" required />
             <input type="email" v-model="newUser.direccion_usuario" placeholder="Dirección *" required />
             <input type="date" v-model="newUser.fecha_nacimiento_usuario" placeholder="Fecha de Nacimiento *"
-                :min="utilityStore.calculateDate(100)" :max="utilityStore.calculateDate(14)" required />
-            <input type="submit" :disabled="!isPersonalDataComplete()" class="next-register-btn" value="Siguiente" />
-            <p>¿Ya tienes una cuenta? <a @click="authStore.toggleForm()">Iniciar sesión</a></p>
+                :min="utilityStore.calculateDate(utilityStore.maxAge)"
+                :max="utilityStore.calculateDate(utilityStore.minAge)" required />
+            <input type="submit" :disabled="!isPersonalDataComplete()" class="next-register-btn" value="Registrar" />
+            <input v-if="authStore.isUserAdmin()" type="button" value="Cancelar" @click="backToInfo()" class="back-link">
+            <p v-else class="back-link">¿Ya tienes una cuenta? <a @click="authStore.toggleForm()">Iniciar sesión</a></p>
         </form>
         <div v-else class="register-credentials-form">
             <h1>Registro de Usuario</h1>
@@ -32,15 +34,23 @@
                 </label>
                 <input type="file" id="fileInput" accept="image/*" @change="handleFileUpload" style="display: none" />
             </div>
-            <input class="user-name-register" type="text" v-model="connection.nick_usuario"
-                placeholder="Nombre de usuario *" required />
-            <div class="password-container"><input class="password-input" :type="isPasswordVisible ? 'text' : 'password'"
+            <input v-if="authStore.isUserAdmin()" id="userid-input" class="user-id-admin" type="text"
+                v-model="newUser.documento_usuario" placeholder="ID de Persona *" required />
+            <select id="role-select" v-if="authStore.isUserAdmin()" v-model="connection.id_rol">
+                <option v-for="role in roleStore.roles" :key="role.id_rol" :value="role.id_rol">
+                    {{ role.nombre_rol }}
+                </option>
+            </select>
+            <input id="nickname-input" :class="authStore.isUserAdmin() ? 'user-name-register-admin' : 'user-name-register'"
+                type="text" v-model="connection.nick_usuario" placeholder="Nombre de usuario *" required />
+
+            <div :id="authStore.isUserAdmin() ? 'password-container-admin' : 'password-container'"><input
+                    class="password-input" :type="isPasswordVisible ? 'text' : 'password'"
                     v-model="connection.password_usuario" placeholder="Contraseña *" required><i
                     :class="isPasswordVisible ? 'bi bi-eye-slash-fill' : 'bi bi-eye-fill'" @click="showPassword"></i>
             </div>
             <input type="button" @click="registerConnection" :disabled="!isDataComplete()"
-                class="register-btn register-credentials-btn" value="Registrarse" />
-            <input type="button" @click="changeRegister" class="register-btn back-btn" value="Volver" />
+                class="register-btn register-credentials-btn" value="Registrar" />
             <input type="button" @click="authStore.toggleForm" class="register-btn" value="Cancelar" />
         </div>
     </div>
@@ -51,11 +61,13 @@ import { ref } from 'vue';
 import { useAuthStore } from '../store/AuthStore';
 import { useUtilityStore } from '../store/UtilityStore';
 import { useUserStore } from '../store/UserStore';
+import { useRoleStore } from '../store/RoleStore'
 import router from '../router';
 
 const authStore = useAuthStore()
 const utilityStore = useUtilityStore()
 const userStore = useUserStore()
+const roleStore = useRoleStore()
 
 const isDataFill = ref(false)
 const imageUrl = ref('../src/assets/user.svg')
@@ -110,7 +122,7 @@ const isDataComplete = () => {
     return requiredFields.every(field => !!connection.value[field]);
 }
 
-const registerUser = async () => {
+const registerPerson = async () => {
     newUser.value.fecha_registro_usuario = new Date().toISOString()
     newUser.value.fecha_nacimiento_usuario = new Date(newUser.value.fecha_nacimiento_usuario).toISOString()
     newUser.value.documento_usuario = parseInt(newUser.value.documento_usuario)
@@ -119,16 +131,23 @@ const registerUser = async () => {
 }
 
 const registerConnection = async () => {
-    connection.value.id_usuario = newUser.value.documento_usuario
+    connection.value.id_usuario = parseInt(newUser.value.documento_usuario, 10)
     await authStore.registerConnection(connection.value)
     await updateImg()
+    authStore.toggleForm()
+}
+
+const backToInfo = () => {
     router.push({ name: 'information' });
 }
 
-
 const changeRegister = async () => {
-    isDataFill.value = !isDataFill.value
-    await registerUser()
+    await registerPerson()
+    if (!authStore.isUserAdmin()) {
+        isDataFill.value = !isDataFill.value
+    } else {
+        router.push({ name: 'information' });
+    }
 }
 
 const validateName = (name) => {
@@ -176,6 +195,7 @@ const updateImg = async () => {
     await userStore.updateImg(newUser.value.documento_usuario, selectedImage.value)
 }
 
+
 </script>
   
 <style scoped>
@@ -185,13 +205,13 @@ const updateImg = async () => {
     padding: 20px;
     border-radius: 5px;
     border: 2px solid rgba(255, 255, 255, 0.5);
-    height: 65%;
+    height: 70%;
     text-align: center;
     position: absolute;
     display: grid;
     grid-template-rows: .5fr 1fr 1fr 1fr 1fr .5fr .5fr;
     grid-template-columns: 1fr 1fr;
-    right: 120px;
+    right: 140px;
     width: 450px;
 }
 
@@ -206,7 +226,7 @@ h1 {
 
 h1,
 .next-register-btn,
-p {
+.back-link {
     grid-column: 1/-1;
 
 }
@@ -302,12 +322,9 @@ a:hover {
 }
 
 .register-credentials-btn {
-    grid-column: 1/2;
+    grid-column: 1/-1;
 }
 
-.back-btn {
-    grid-column: 2/3;
-}
 
 .image-upload {
     grid-column: 1/-1;
@@ -319,12 +336,30 @@ a:hover {
 
 }
 
+.user-id-admin {
+    font-size: larger;
+}
+
+.user-name-register-admin {
+    font-size: larger;
+
+}
+
 .user-name-register {
     grid-column: 1/-1;
     font-size: larger;
 }
 
-.password-container {
+
+#password-container-admin {
+    grid-column: 2/-1;
+    grid-row: 4/5;
+    padding-top: 30px;
+    margin: 0px;
+    position: relative;
+}
+
+#password-container {
     grid-column: 1/-1;
     padding: 0px;
     margin: 0px;
@@ -336,14 +371,21 @@ a:hover {
     padding-bottom: 8px;
 }
 
-.password-container>i {
+#password-container-admin>i {
+    color: var(--primary-color);
+    position: absolute;
+    right: 30px;
+    top: 40px;
+    cursor: pointer;
+}
+
+#password-container>i {
     color: var(--primary-color);
     position: absolute;
     right: 50px;
     top: 4px;
     cursor: pointer;
 }
-
 
 .image-preview {
     position: relative;

@@ -3,6 +3,7 @@ import { format, utcToZonedTime } from 'date-fns-tz'
 import { subYears, addDays } from 'date-fns'
 import { es } from 'date-fns/locale'
 import DocTypeService from '../services/DocTypeService';
+import RoleService from '../services/RoleService'
 
 export const useUtilityStore = defineStore('utility', {
     state: () => ({
@@ -11,8 +12,8 @@ export const useUtilityStore = defineStore('utility', {
         dateRegion: { timeZone: 'America/Bogota', locale: es },
         defaultFormat: "yyyy-MM-dd",
         status: ['A', 'B', 'C'],
-        // maxAge: 100,
-        // minAge: 14
+        maxAge: 90, // Edad maxima que puede tener el usuario 
+        minAge: 14, // || minima ||
     }),
     actions: {
         formatDate(dateTime) {
@@ -39,7 +40,7 @@ export const useUtilityStore = defineStore('utility', {
         formatCellphoneNumber(number) {
             return "+57 " + number.slice(0, 3) + " " + number.slice(3, 6) + " " + number.slice(6);
         },
-        calculateDate(years) {
+        calculateDate(years) {//Calcula la fecha minima y maxima según la edad
             let actualDate = new Date();
             let date = subYears(actualDate, years);
             return format(date, this.defaultFormat);
@@ -63,14 +64,18 @@ export const useUtilityStore = defineStore('utility', {
             if (input === "") {
                 return true;
             }
-            console.log(input);
             return this.status.includes(input);
         },
         async fetchDocTypes() {
             const docs = await DocTypeService.fetchAllDocs();
+            console.log(docs);
             if (docs) {
                 this.docTypes = docs;
             }
+        },
+        async fetchRoles() {
+            const roles = await RoleService.fetchAll()
+
         }
     }
 });

@@ -13,13 +13,10 @@
 </template>
   
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import { useAuthStore } from '../store/AuthStore';
-import { useUserStore } from '../store/UserStore';
-import DocTypeService from '../services/DocTypeService';
 
 const authStore = useAuthStore()
-const userStore = useUserStore()
 const isPasswordVisible = ref(false)
 
 const showPassword = () => {
@@ -49,7 +46,7 @@ h1 {
     display: flex;
     flex-direction: column;
     justify-content: space-around;
-    right: 120px;
+    right: 150px;
 }
 
 input {

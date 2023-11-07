@@ -6,7 +6,8 @@ import router from '../router'
 
 export const useAuthStore = defineStore('auth', {
     state: () => ({
-        showLogin: true,
+        showLogin: false,
+        showUserRegister: false,
         onlineUser: { nick: null, rol: null, foto: null, token: null, personId: null },
         password: null,
     }),
@@ -25,6 +26,7 @@ export const useAuthStore = defineStore('auth', {
 
         toggleForm() {
             this.showLogin = !this.showLogin;
+            router.push({ name: 'information' });
         },
 
         async login() {
@@ -54,9 +56,17 @@ export const useAuthStore = defineStore('auth', {
         logout() {
             this.onlineUser = { nick: null, rol: null, foto: null, token: null, personId: null }
             this.password = null
+            this.showLogin = true
+            this.showUserRegister = false
         },
         async reloadOnlinePerson() {
             await this.updateOnlinePerson(this.onlineUser.nick, this.onlineUser.token)
+        },
+        isUserAdmin() {
+            if (!this.onlineUser.rol) {
+                return false
+            }
+            return this.onlineUser.rol.includes('administrador')
         }
     },
     persist: {

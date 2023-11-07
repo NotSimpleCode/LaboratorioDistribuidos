@@ -14,12 +14,17 @@ import RegisterUser from '../components/RegisterUser.vue'
 import { useAuthStore } from '../store/AuthStore';
 import { useUtilityStore } from '../store/UtilityStore';
 import { onMounted } from 'vue'
+import { useRoleStore } from '../store/RoleStore';
 
 const authStore = useAuthStore()
 const utilityStore = useUtilityStore()
+const roleStore = useRoleStore()
 
 onMounted(() => {
     utilityStore.fetchDocTypes()
+    if (authStore.onlineUser.token) {
+        roleStore.fetchRoles()
+    }
 })
 
 </script>
