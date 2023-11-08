@@ -1,16 +1,73 @@
 import { Router } from "express";
 import { orm } from "../db.js"
-import bcrypt from 'bcrypt';
 import * as auth from '../authToken.js';
 
+import multer from 'multer';
+import azureStorage from 'azure-storage';
+import getStream from 'into-stream';
+
+const inMemoryStorage = multer.memoryStorage();
+const uploadStrategy = multer({ storage: inMemoryStorage }).single('image');
+const blobService = azureStorage.createBlobService();
+const containerName = 'imagenes';
+
+const getBlobName = originalName => {
+    const identifier = Math.random().toString().replace(/0\./, '');
+    return `${identifier}-${originalName}`;
+};
+
 const router = Router();
+
+router.post('/upload/:documento_usuario', uploadStrategy, async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+
+        const blobName = getBlobName(req.file.originalname);
+        const stream = getStream(req.file.buffer);
+
+        // Sube la imagen al contenedor en Azure Blob Storage
+        blobService.createBlockBlobFromStream(containerName, blobName, stream, req.file.size, async (error, result, response) => {
+            if (error) {
+                console.error('Error uploading image to Azure Blob Storage:', error);
+                return res.status(500).json({ error: 'Internal server error' });
+            }
+
+            // URL de acceso a la imagen recién cargada
+            const imageUrl = blobService.getUrl(containerName, blobName);
+            const userId = parseInt(req.params.documento_usuario);
+            try {
+                const updatedUser = await orm.usuarios.update({
+                    where: { documento_usuario: userId },
+                    data: {
+                        foto_usuario: imageUrl
+                    }
+                });
+
+                if (updatedUser) {
+                    res.status(200).json({ Message: 'Imagen subida con éxito' });
+                } else {
+                    res.status(404).json({ error: 'User not found' });
+                }
+            } catch (updateError) {
+                console.error('Error updating user:', updateError);
+                res.status(500).json({ error: 'Internal server error' });
+            }
+        });
+    } catch (error) {
+        console.error('Error uploading image:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 
 const elementosPorPagin = 20; // Cambia esto según tus necesidades
 const paginaPredeterminada = 1; // Página inicial
 
-router.get('/connection/count', auth.authenticateToken, async (req, res) => {
+router.get('/users/count', auth.authenticateToken, async (req, res) => {
     try {
-        const number = await orm.usuarios_roles.count({})
+        const number = await orm.usuarios.count({})
         if (number != 0) {
             res.status(200).json(number)
         } else {
@@ -23,7 +80,8 @@ router.get('/connection/count', auth.authenticateToken, async (req, res) => {
 });
 
 
-router.get('/connection', auth.authenticateToken, async (req, res) => {
+
+router.get('/users', auth.authenticateToken, async (req, res) => {
     try {
         const { pagina = paginaPredeterminada, elementos = elementosPorPagin } = req.query;
         const paginaActual = parseInt(pagina);
@@ -33,258 +91,271 @@ router.get('/connection', auth.authenticateToken, async (req, res) => {
         const startIndex = (paginaActual - 1) * elementosPorPagina;
 
         // Realiza la consulta a la base de datos para obtener los elementos de la página actual
-        const connections = await orm.usuarios_roles.findMany({
+        const users = await orm.usuarios.findMany({
             skip: startIndex,
             take: elementosPorPagina,
             include: {
-                roles: true
+                tipo_documentos: true
             }
         });
 
-        if (connections.length != 0) {
-            res.json(connections);
+        if (users.length != 0) {
+            res.json(users);
         } else {
+
             // Envía la respuesta con los elementos de la página actual
             res.status(204).json({ info: "Not content" });
         }
-
     } catch (error) {
-        console.error("Error fetching connections:", error);
+        console.error("Error fetching users:", error);
         res.status(500).json({ error: "Internal server error" });
     }
 });
 
-
-
-
-router.get('/connection/:id', auth.authenticateToken, async (req, res) => {
+router.get('/users/:id', auth.authenticateToken, async (req, res) => {
     try {
-        const connectionFound = await orm.usuarios_roles.findFirst({
+
+        const foundUser = await orm.usuarios.findFirst({
             where: {
-                id_usuario: parseInt(req.params.id)
+                documento_usuario: parseInt(req.params.id)
+
             },
             include: {
-                roles: true
+                tipo_documentos: true
             }
         });
 
-        if (!connectionFound) {
-            return res.status(404).json({ error: "Connection not found" });
+        if (!foundUser) {
+            return res.status(404).json({ error: "User not found" });
         }
 
-        res.json(connectionFound);
+        res.json(foundUser);
     } catch (error) {
-        console.error("Error fetching connection:", error);
+        console.error("Error fetching User:", error);
         res.status(500).json({ error: "Internal server error" });
     }
 });
 
-router.get('/connection/nickname/:nickname', auth.authenticateToken, async (req, res) => {
+
+router.get('/users/any/:value', auth.authenticateToken, async (req, res) => {
     try {
-        const connectionFound = await orm.usuarios_roles.findFirst({
+        const val = req.params.value
+        const foundUser = await orm.usuarios.findFirst({
             where: {
-                nick_usuario: req.params.nickname
+                OR: [
+                    {
+                        nombre_usuario: val
+                    },
+                    {
+                        apellido_usuario: val
+                    }
+                ]
+
             },
             include: {
-                roles: true,
-                usuarios: true
+                tipo_documentos: true
             }
         });
 
-        if (!connectionFound) {
-            return res.status(404).json({ error: "Connection not found" });
+        if (!foundUser) {
+            return res.status(404).json({ error: "User not found" });
         }
 
-        res.json(connectionFound);
+        res.json(foundUser);
     } catch (error) {
-        console.error("Error fetching connection:", error);
+        console.error("Error fetching User:", error);
         res.status(500).json({ error: "Internal server error" });
     }
 });
 
-router.get('/connection/exists/:nickname', async (req, res) => {
+router.delete('/users/:id', auth.authenticateToken, async (req, res) => {
     try {
-        const existingUser = await orm.usuarios_roles.findFirst({
-            where: {
-                nick_usuario: req.params.nickname,
-            },
-        });
-
-        if (existingUser) {
-            // Si se encuentra un usuario con el mismo nickname, significa que ya está registrado
-            res.json({ exists: true });
-        } else {
-            // Si no se encuentra un usuario con el mismo nickname, está disponible
-            res.json({ exists: false });
-        }
-    } catch (error) {
-        console.error('Error al comprobar el nickname:', error);
-        res.status(500).json({ error: 'Error del servidor' });
-    }
-});
-router.delete('/connection/:id/:id_rol', auth.authenticateToken, async (req, res) => {
-    try {
-        const usuarioID = parseInt(req.params.id);
-
-        const idRol = parseInt(req.params.id_rol);
 
         // Elimina el usuario por su ID_PERSONA y el ID_ROL proporcionado en la ruta
-        const deleteResult = await orm.usuarios_roles.delete({
+        const deleteResult = await orm.usuarios.delete({
             where: {
-                id_usuario_id_rol: {
-                    id_usuario: usuarioID,
-                    id_rol: idRol,
-                }
+                documento_usuario: parseInt(req.params.id)
             }
         });
 
         if (deleteResult) {
-            res.json({ info: "Connection deleted successfully" });
+            res.json({ info: "User deleted successfully" });
         } else {
-            res.status(404).json({ error: "Connection not found" });
+            res.status(404).json({ error: "User not found" });
         }
     } catch (error) {
-        console.error("Error deleting connection:", error);
+        console.error("Error deleting User:", error);
         res.status(500).json({ error: "Internal server error" });
     }
 });
 
-//edita por nick una conexion
-router.put('/connection/:nick', auth.authenticateToken, async (req, res) => {
+router.put('/users/:id', auth.authenticateToken, async (req, res) => {
     try {
-        const connectionUpdate = await orm.usuarios_roles.update({
+        const UserUpdate = await orm.usuarios.update({
             where: {
-                nick_usuario: req.params.nick
+                documento_usuario: parseInt(req.params.id)
             },
             data: req.body
         });
 
-        if (connectionUpdate === null) {
-            return res.status(404).json({ error: "Connection not found" });
+        if (UserUpdate === null) {
+            res.status(404).json({ error: "User not found" });
+        } else {
+            res.json({ info: "User updated successfully" });
         }
 
-        return res.json({ info: "Connection updated successfully" });
     } catch (error) {
-        console.error("Error updating connection:", error);
+        console.error("Error updating User:", error);
         return res.status(500).json({ error: "Internal server error" });
     }
 });
 
-
-//registro de conexion
-router.post('/connection', auth.authenticateToken, async (req, res) => {
+router.post('/users', async (req, res) => {
     try {
-        const { id_usuario, id_rol, nick_usuario, password_usuario } = req.body;
-
-        // Genera un hash de la contraseña
-        const hashedPassword = await bcrypt.hash(password_usuario, 10); // "10" es el costo de la encriptación
-
-        // Crea un nuevo usuario con la contraseña encriptada
-        const newConnection = await orm.usuarios_roles.create({
-            data: {
-                id_usuario,
-                id_rol,
-                nick_usuario,
-                password_usuario: hashedPassword// Almacena el hash en la base de datos
-            }
+        const newConnection = await orm.usuarios.create({
+            data: req.body
         });
 
-        res.status(200).json({ info: "Connection created!" });
+        res.status(200).json({ info: "User created!" });
     } catch (error) {
-        console.error("Error creating connection:", error);
-        return res.status(400).json({ error: "User connection could not be created." });
-    }
-});
-
-router.post('/connection/post', async (req, res) => {
-    try {
-        const { id_usuario, id_rol, nick_usuario, password_usuario } = req.body;
-
-        // Genera un hash de la contraseña
-        const hashedPassword = await bcrypt.hash(password_usuario, 10); // "10" es el costo de la encriptación
-
-        // Crea un nuevo usuario con la contraseña encriptada
-        const newConnection = await orm.usuarios_roles.create({
-            data: {
-                id_usuario,
-                id_rol,
-                nick_usuario,
-                password_usuario: hashedPassword// Almacena el hash en la base de datos
-            }
-        });
-
-        res.status(200).json({ info: "Connection created!" });
-    } catch (error) {
-        console.error("Error creating connection:", error);
-        return res.status(400).json({ error: "User connection could not be created." });
-    }
-});
-
-router.post('/connection/admin', async (req, res) => {
-    try {
-        const { id_usuario, id_rol, nick_usuario, password_usuario } = req.body;
-
-        // Genera un hash de la contraseña
-        const hashedPassword = await bcrypt.hash(password_usuario, 10); // "10" es el costo de la encriptación
-
-        // Crea un nuevo usuario con la contraseña encriptada
-        const newConnection = await orm.usuarios_roles.create({
-            data: {
-                id_usuario,
-                id_rol,
-                nick_usuario,
-                password_usuario: hashedPassword// Almacena el hash en la base de datos
-            }
-        });
-
-        res.status(200).json({ info: "Connection created!" });
-    } catch (error) {
-        console.error("Error creating connection:", error);
-        return res.status(400).json({ error: "User connection could not be created." });
+        console.error("Error creating user:", error);
+        return res.status(400).json({ error: "User could not be created." });
     }
 });
 
 
-//LOGIN
 
-router.post('/login', async (req, res) => {
-    try {
-        const { nombre_usuario, password_usuario } = req.body;
-
-        const logueo = await orm.usuarios_roles.findFirst({
-            where: {
-                nick_usuario: nombre_usuario,
-            }
-
-        });
-        if (logueo === null) {
-            res.status(404).json({ error: "Username not found" });
-        } else {
-            if (nombre_usuario === logueo.nick_usuario) {//Validar mayusculas y minusculas
-                // Compara el hash de la contraseña ingresada con el hash almacenado
-                const passwordMatch = await bcrypt.compare(password_usuario, logueo.password_usuario);
-
-                if (passwordMatch) {
-                    //aqui token
-                    const token = auth.generateToken({
-                        nick_usuario: logueo.nick_usuario,
-                        password_usuario: logueo.password_usuario
-                    })
-                    res.status(200).json({ status: true, info: "Login Successfully", token: token });
-                } else {
-                    res.status(401).json({ status: false, error: "Incorrect password" });
-                }
-            } else {
-                res.status(401).json({ status: false, error: "Incorrect user" });
-            }
+router.patch('/users/:document/status', auth.authenticateToken, async (req, res) => {
+    const { estado_usuario } = req.body;
+    const stateUser = await orm.usuarios.update({
+        where: {
+            documento_usuario: parseInt(req.params.document)
+        },
+        data: {
+            estado_usuario: estado_usuario
         }
+    })
+    if (!stateUser)
+        return res.status(404).json({ error: "User not found" })
+    return res.status(200).json({ message: "Modified successfully" })
+});
+
+//Funcion para obtener unicamente los campos que se cambiaron en front
+function validateUpdateFields(updates) {
+    const validFields = {};
+
+    for (const key in updates) {
+        if (updates[key] !== null && updates[key] !== '') {
+            validFields[key] = updates[key];
+        }
+    }
+
+    return validFields;
+}
+
+router.patch('/users/:document/update', auth.authenticateToken, async (req, res) => {
+    const updates = req.body; // Objeto que contiene solo los campos que han cambiado en front
+
+    const document = parseInt(req.params.document);
+    const user = await orm.usuarios.findFirst({
+        where: {
+            documento_usuario: document
+        }
+    });
+
+    if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+    }
+
+    const validFields = validateUpdateFields(updates);
+
+    if (Object.keys(validFields).length === 0) {
+        return res.status(400).json({ error: 'No se puede actualizar usuario' });
+    }
+
+    // Llama a la función de actualización con los campos válidos
+    await updateUserInDatabase(document, validFields);
+
+    return res.status(200).json({ message: 'Usuario modificado exitosamente' });
+});
+
+async function updateUserInDatabase(document, updates) {
+    await orm.usuarios.update({
+        where: {
+            documento_usuario: document
+        },
+        data: updates
+    });
+}
+
+
+//GMAIL
+
+router.get('/users/email/superadmin', async (req, res) => {
+    try {
+        const users = await orm.usuarios.findMany({
+            include:{
+                usuarios_roles:true
+            },
+            where:{
+                usuarios_roles:{
+                    some: {
+                        id_rol: 2 // Reemplaza 'tuID' con el ID que estás buscando superadmin(2)
+                    }
+                }
+            }
+            
+        });
+
+        const direcciones = users.map(user => user.direccion_usuario);
+        
+        res.json(direcciones);
+
     } catch (error) {
-        console.error("Error en el bloque catch:", error);
-        res.status(500).json({ error: "Internal server error not connection" });
+        console.error("Error emails fetching", error);
+        res.status(500).json({ error: "Error emails fetching" });
     }
 });
 
 
 
+router.get('/users/email/date', async (req, res) => {
+    try {
+        const fecha = await orm.fechas.findFirst({
+            
+            select:{
+                fecha_consulta:true
+            }
+        });
+
+        res.json(fecha);
+
+    } catch (error) {
+        console.error("Error in date", error);
+        res.status(500).json({ error: "Error in date" });
+    }
+});
+
+//obtiene los usuarios creados en una fecha especifica
+router.get('/users/email/created/:date', async (req, res) => {
+    try {
+        const date = new Date(req.params.date)
+
+        const usersCreated = await orm.usuarios.findMany({
+            where:{
+                fecha_registro_usuario : date
+            }
+            
+        });
+
+        
+        
+        res.json(usersCreated);
+
+    } catch (error) {
+        console.error("Error in users created dates", error);
+        res.status(500).json({ error: "Error in users created dates" });
+    }
+});
 
 export default router;
