@@ -11,10 +11,10 @@ app.use(cors());
 
 app.use(express.json());
 
-app.use('api/',userRoutes);
-app.use('api/',rolesRoutes);
-app.use('api/',typeDocumentsRoutes);
-app.use('api/',userRolesRoutes);
+app.use('/api',userRoutes);
+app.use('/api',rolesRoutes);
+app.use('/api',typeDocumentsRoutes);
+app.use('/api',userRolesRoutes);
 
 const port = process.env.PORT || 3000; // Usa el puerto proporcionado por Azure o el puerto 3000 si no está definido
 
