@@ -8,16 +8,23 @@ import redis from 'redis';
 
 const cachePass = "3SWLQcIYw64HPm3z3o6ZuoX8rMpeZ1qF3AzCaJYrIlk=";
 const cacheHost = "rolesCache.redis.cache.windows.net";
+var cacheConnection = ""
+try{
+    cacheConnection = redis.createClient({
+        url: `rediss://${cacheHost}:6380`,
+        password: cachePass
+    });
+    
+    await cacheConnection.connect();
+    
+    console.log("Cache response : " + await cacheConnection.ping());
+}catch (error){
+    console.error("Cache response : Not Response - Please Check connections");
+}
 
 
-const cacheConnection = redis.createClient({
-    url: `rediss://${cacheHost}:6380`,
-    password: cachePass
-});
 
-await cacheConnection.connect();
 
-console.log("Cache response : " + await cacheConnection.ping());
 
 const redisSet = async ({ body }) => {
     // Almacenar el cuerpo de la solicitud (que es un array de objetos JSON) en Redis 2 minutos de vida
@@ -27,8 +34,12 @@ const redisSet = async ({ body }) => {
 
 router.get('/roles', auth.authenticateToken, async (req, res) => {
     try {
+        var cachedRoles = ""
         // Intenta obtener los roles de Redis
-        const cachedRoles = await cacheConnection.get('roles');
+        if(cacheConnection!=""){
+            cachedRoles = await cacheConnection.get('roles');
+        }
+        
 
         let roles;
         if (cachedRoles) {
@@ -37,7 +48,9 @@ router.get('/roles', auth.authenticateToken, async (req, res) => {
         } else {
             // Si no, obtén los roles de la base de datos y almacénalos en Redis
             roles = await orm.roles.findMany();
-            redisSet({ body: roles });
+            if(cacheConnection!=""){
+                redisSet({ body: roles });
+            }
         }
 
         if (roles.length != 0) {
