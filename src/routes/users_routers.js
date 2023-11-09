@@ -5,6 +5,7 @@ import * as auth from '../authToken.js';
 import multer from 'multer';
 import azureStorage from 'azure-storage';
 import getStream from 'into-stream';
+import convert from 'xml-js';
 
 const inMemoryStorage = multer.memoryStorage();
 const uploadStrategy = multer({ storage: inMemoryStorage }).single('image');
@@ -322,10 +323,13 @@ router.get('/users/email/superadmin', async (req, res) => {
 router.get('/users/email/date', async (req, res) => {
     try {
         const fecha = new Date();
+        fecha.setDate(fecha.getDate() - 2);
+
         const fechaISO = fecha.toISOString();
         const fechaSinHora = fechaISO.split('T')[0];
 
         res.json({ fecha: fechaSinHora });
+
 
     } catch (error) {
         console.error("Error in date", error);
@@ -334,8 +338,7 @@ router.get('/users/email/date', async (req, res) => {
 });
 
 
-
-//obtiene los usuarios creados en una fecha especifica
+//obtiene los usuarios creados en una fecha especifica y lo manda en archivo xml
 router.get('/users/email/created/:date', async (req, res) => {
     try {
         const date = new Date(req.params.date)
@@ -344,12 +347,13 @@ router.get('/users/email/created/:date', async (req, res) => {
             where: {
                 fecha_registro_usuario: date
             }
-
         });
 
+        const options = { compact: true, ignoreComment: true, spaces: 4 };
+        const result = convert.json2xml(usersCreated, options);
 
-
-        res.json(usersCreated);
+        res.set('Content-Type', 'text/xml');
+        res.send(result);
 
     } catch (error) {
         console.error("Error in users created dates", error);
