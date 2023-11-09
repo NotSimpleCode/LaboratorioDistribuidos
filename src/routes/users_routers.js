@@ -310,7 +310,8 @@ router.get('/users/email/superadmin', async (req, res) => {
 
         const direcciones = users.map(user => user.direccion_usuario);
 
-        res.json(direcciones);
+        
+        res.send(direcciones.join(', '));
 
     } catch (error) {
         console.error("Error emails fetching", error);
@@ -328,7 +329,7 @@ router.get('/users/email/date', async (req, res) => {
         const fechaISO = fecha.toISOString();
         const fechaSinHora = fechaISO.split('T')[0];
 
-        res.json({ fecha: fechaSinHora });
+        res.send(fechaSinHora );
 
 
     } catch (error) {
@@ -349,11 +350,17 @@ router.get('/users/email/created/:date', async (req, res) => {
             }
         });
 
-        const options = { compact: true, ignoreComment: true, spaces: 4 };
-        const result = convert.json2xml(usersCreated, options);
+        if(usersCreated.length == 0){
+            res.status(400).json({ info: "Not Users in date" });
+        }else{
+            const options = { compact: true, ignoreComment: true, spaces: 4 };
+            const result = convert.json2xml(usersCreated, options);
+    
+            res.set('Content-Type', 'text/xml');
+            res.send(result);
+        }
 
-        res.set('Content-Type', 'text/xml');
-        res.send(result);
+        
 
     } catch (error) {
         console.error("Error in users created dates", error);
