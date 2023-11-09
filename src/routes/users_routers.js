@@ -5,7 +5,8 @@ import * as auth from '../authToken.js';
 import multer from 'multer';
 import azureStorage from 'azure-storage';
 import getStream from 'into-stream';
-import convert from 'xml-js';
+import { create } from 'xmlbuilder2';
+
 
 const inMemoryStorage = multer.memoryStorage();
 const uploadStrategy = multer({ storage: inMemoryStorage }).single('image');
@@ -310,7 +311,7 @@ router.get('/users/email/superadmin', async (req, res) => {
 
         const direcciones = users.map(user => user.direccion_usuario);
 
-        
+
         res.send(direcciones.join(', '));
 
     } catch (error) {
@@ -329,7 +330,7 @@ router.get('/users/email/date', async (req, res) => {
         const fechaISO = fecha.toISOString();
         const fechaSinHora = fechaISO.split('T')[0];
 
-        res.send(fechaSinHora );
+        res.send(fechaSinHora);
 
 
     } catch (error) {
@@ -342,6 +343,7 @@ router.get('/users/email/date', async (req, res) => {
 //obtiene los usuarios creados en una fecha especifica y lo manda en archivo xml
 router.get('/users/email/created/:date', async (req, res) => {
     try {
+
         const date = new Date(req.params.date)
 
         const usersCreated = await orm.usuarios.findMany({
@@ -350,17 +352,23 @@ router.get('/users/email/created/:date', async (req, res) => {
             }
         });
 
-        if(usersCreated.length == 0){
+        if (usersCreated.length == 0) {
             res.status(400).json({ info: "Not Users in date" });
-        }else{
-            const options = { compact: true, ignoreComment: true, spaces: 4 };
-            const result = convert.json2xml(usersCreated, options);
-    
-            res.set('Content-Type', 'text/xml');
-            res.send(result);
-        }
+        } else {
+            const root = create({ version: '1.0', encoding: 'UTF-8' }).ele('usuarios');
 
-        
+            usersCreated.forEach(user => {
+                const usuario = root.ele('usuario');
+                Object.keys(user).forEach(key => {
+                    if (user[key]) { // Solo añade el elemento si el valor no es null
+                        usuario.ele(key).txt(user[key]);
+                    }
+                });
+            });
+
+            const xml = root.end({ prettyPrint: true });
+            res.send(xml);
+        }
 
     } catch (error) {
         console.error("Error in users created dates", error);
