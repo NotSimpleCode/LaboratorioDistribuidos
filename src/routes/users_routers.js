@@ -5,7 +5,7 @@ import * as auth from '../authToken.js';
 import multer from 'multer';
 import azureStorage from 'azure-storage';
 import getStream from 'into-stream';
-import { create } from 'xmlbuilder2';
+import xlsx from 'xlsx';
 
 
 const inMemoryStorage = multer.memoryStorage();
@@ -355,19 +355,13 @@ router.get('/users/email/created/:date', async (req, res) => {
         if (usersCreated.length == 0) {
             res.status(400).json({ info: "Not Users in date" });
         } else {
-            const root = create({ version: '1.0', encoding: 'UTF-8' }).ele('usuarios');
-
-            usersCreated.forEach(user => {
-                const usuario = root.ele('usuario');
-                Object.keys(user).forEach(key => {
-                    if (user[key]) { // Solo añade el elemento si el valor no es null
-                        usuario.ele(key).txt(user[key]);
-                    }
-                });
-            });
-
-            const xml = root.end({ prettyPrint: true });
-            res.send(xml);
+            const ws = xlsx.utils.json_to_sheet(usersCreated);
+            const wb = xlsx.utils.book_new();
+            xlsx.utils.book_append_sheet(wb, ws, "Usuarios");
+            const buf = xlsx.write(wb, { type: 'buffer' });
+            res.setHeader('Content-Disposition', 'attachment; filename="Usuarios.xlsx"');
+            res.type('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.send(buf);
         }
 
     } catch (error) {
