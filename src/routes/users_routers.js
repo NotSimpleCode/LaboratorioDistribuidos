@@ -353,7 +353,7 @@ router.get('/users/email/created/:date', async (req, res) => {
         });
 
         if (usersCreated.length == 0) {
-            res.status(400).json({ info: "Not Users in date" });
+            res.status(204).json({ info: "Not Users in date" });
         } else {
             const ws = xlsx.utils.json_to_sheet(usersCreated);
             const wb = xlsx.utils.book_new();
