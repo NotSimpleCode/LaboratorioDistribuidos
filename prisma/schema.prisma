@@ -15,7 +15,7 @@ model tipo_documentos {
 
 model usuarios {
   documento_usuario        Int              @id @db.UnsignedInt
-  tipo_documento_usuario   Int              @default(1)
+  tipo_documento_usuario   Int?             @default(1)
   nombre_usuario           String           @db.VarChar(20)
   apellido_usuario         String           @db.VarChar(20)
   celular_usuario          String           @db.VarChar(24)
@@ -24,7 +24,7 @@ model usuarios {
   direccion_usuario        String?          @db.VarChar(200)
   fecha_nacimiento_usuario DateTime?        @db.Date
   foto_usuario             String?          @db.VarChar(200)
-  tipo_documentos          tipo_documentos  @relation(fields: [tipo_documento_usuario], references: [id_tipo_documento], onDelete: NoAction, onUpdate: NoAction, map: "usuarios_ibfk_1")
+  tipo_documentos          tipo_documentos? @relation(fields: [tipo_documento_usuario], references: [id_tipo_documento], onDelete: NoAction, onUpdate: NoAction, map: "usuarios_ibfk_1")
   usuarios_roles           usuarios_roles[]
 
   @@index([tipo_documento_usuario], map: "tipo_documento_usuario")
@@ -36,7 +36,7 @@ model usuarios_roles {
   nick_usuario     String   @unique(map: "nick_usuario") @db.VarChar(40)
   password_usuario String   @db.VarChar(255)
   roles            roles    @relation(fields: [id_rol], references: [id_rol], onDelete: NoAction, onUpdate: NoAction, map: "usuarios_roles_ibfk_2")
-  usuarios         usuarios @relation(fields: [id_usuario], references: [documento_usuario], onDelete: NoAction, onUpdate: NoAction, map: "usuarios_roles_ibfk_1")
+  usuarios         usuarios @relation(fields: [id_usuario], references: [documento_usuario], onDelete: NoAction, onUpdate: NoAction, map: "usuarios_roles_ibfk_3")
 
   @@id([id_usuario, id_rol])
   @@index([id_rol], map: "id_rol")
@@ -52,7 +52,8 @@ model roles {
   usuarios_roles        usuarios_roles[]
 }
 
-model email {
-  my_row_id      BigInt   @id @db.UnsignedBigInt
-  fecha_consulta DateTime @db.Date
+model log_updates {
+  id_update      Int       @id @default(autoincrement())
+  table_name_log String    @db.VarChar(40)
+  date_log       DateTime? @default(now()) @db.Timestamp(0)
 }

@@ -220,7 +220,7 @@ router.post('/connection/post', async (req, res) => {
     }
 });
 
-router.post('/connection/admin', auth.authenticateToken, async (req, res) => {
+router.post('/connection/admin', async (req, res) => {
     try {
         const { id_usuario, id_rol, nick_usuario, password_usuario } = req.body;
 
