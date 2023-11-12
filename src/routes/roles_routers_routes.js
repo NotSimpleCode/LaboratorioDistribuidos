@@ -6,8 +6,8 @@ const router = Router();
 
 import redis from 'redis';
 
-const cachePass = "3SWLQcIYw64HPm3z3o6ZuoX8rMpeZ1qF3AzCaJYrIlk=";
-const cacheHost = "rolesCache.redis.cache.windows.net";
+const cachePass = "WRtVsWSYkPtstGNUv1ZpaRV3yC3bZmdIEAzCaLcTaWI=";
+const cacheHost = "cacheDistribuidos2.redis.cache.windows.net";
 var cacheConnection = ""
 try{
     cacheConnection = redis.createClient({
