@@ -220,30 +220,6 @@ router.post('/connection/post', async (req, res) => {
     }
 });
 
-router.post('/connection/admin', async (req, res) => {
-    try {
-        const { id_usuario, id_rol, nick_usuario, password_usuario } = req.body;
-
-        // Genera un hash de la contraseña
-        const hashedPassword = await bcrypt.hash(password_usuario, 10); // "10" es el costo de la encriptación
-
-        // Crea un nuevo usuario con la contraseña encriptada
-        const newConnection = await orm.usuarios_roles.create({
-            data: {
-                id_usuario,
-                id_rol,
-                nick_usuario,
-                password_usuario: hashedPassword// Almacena el hash en la base de datos
-            }
-        });
-
-        res.status(200).json({ info: "Connection created!" });
-    } catch (error) {
-        console.error("Error creating connection:", error);
-        return res.status(400).json({ error: "User connection could not be created." });
-    }
-});
-
 
 //LOGIN
 

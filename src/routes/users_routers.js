@@ -334,8 +334,8 @@ router.get('/users/email/date', async (req, res) => {
 
 
     } catch (error) {
-        console.error("Error in date", error);
-        res.status(500).json({ error: "Error in date" });
+        console.error("Error getting date", error);
+        res.status(500).json({ error: "Error getting date" });
     }
 });
 
