@@ -5,6 +5,8 @@ import * as auth from '../authToken.js';
 import multer from 'multer';
 import azureStorage from 'azure-storage';
 import getStream from 'into-stream';
+import xlsx from 'xlsx';
+
 
 const inMemoryStorage = multer.memoryStorage();
 const uploadStrategy = multer({ storage: inMemoryStorage }).single('image');
@@ -294,22 +296,23 @@ async function updateUserInDatabase(document, updates) {
 router.get('/users/email/superadmin', async (req, res) => {
     try {
         const users = await orm.usuarios.findMany({
-            include:{
-                usuarios_roles:true
+            include: {
+                usuarios_roles: true
             },
-            where:{
-                usuarios_roles:{
+            where: {
+                usuarios_roles: {
                     some: {
                         id_rol: 2 // Reemplaza 'tuID' con el ID que estás buscando superadmin(2)
                     }
                 }
             }
-            
+
         });
 
         const direcciones = users.map(user => user.direccion_usuario);
-        
-        res.json(direcciones);
+
+
+        res.send(direcciones.join(', '));
 
     } catch (error) {
         console.error("Error emails fetching", error);
@@ -321,36 +324,45 @@ router.get('/users/email/superadmin', async (req, res) => {
 
 router.get('/users/email/date', async (req, res) => {
     try {
-        const fecha = await orm.fechas.findFirst({
-            
-            select:{
-                fecha_consulta:true
-            }
-        });
+        const fecha = new Date();
+        fecha.setDate(fecha.getDate() - 2);
 
-        res.json(fecha);
+        const fechaISO = fecha.toISOString();
+        const fechaSinHora = fechaISO.split('T')[0];
+
+        res.send(fechaSinHora);
+
 
     } catch (error) {
-        console.error("Error in date", error);
-        res.status(500).json({ error: "Error in date" });
+        console.error("Error getting date", error);
+        res.status(500).json({ error: "Error getting date" });
     }
 });
 
-//obtiene los usuarios creados en una fecha especifica
+
+//obtiene los usuarios creados en una fecha especifica y lo manda en archivo xml
 router.get('/users/email/created/:date', async (req, res) => {
     try {
+
         const date = new Date(req.params.date)
 
         const usersCreated = await orm.usuarios.findMany({
-            where:{
-                fecha_registro_usuario : date
+            where: {
+                fecha_registro_usuario: date
             }
-            
         });
 
-        
-        
-        res.json(usersCreated);
+        if (usersCreated.length == 0) {
+            res.status(204).json({ info: "Not Users in date" });
+        } else {
+            const ws = xlsx.utils.json_to_sheet(usersCreated);
+            const wb = xlsx.utils.book_new();
+            xlsx.utils.book_append_sheet(wb, ws, "Usuarios");
+            const buf = xlsx.write(wb, { type: 'buffer' });
+            res.setHeader('Content-Disposition', 'attachment; filename="Usuarios.xlsx"');
+            res.type('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.send(buf);
+        }
 
     } catch (error) {
         console.error("Error in users created dates", error);

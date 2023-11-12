@@ -27,7 +27,8 @@
     "mysql": "^2.18.1",
     "openssl": "^2.0.0",
     "package-lock.json": "^1.0.0",
-    "redis": "^4.6.10"
+    "redis": "^4.6.10",
+    "xlsx": "^0.18.5"
   },
   "description": ""
 }
