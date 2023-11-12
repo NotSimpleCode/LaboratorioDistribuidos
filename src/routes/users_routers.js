@@ -293,26 +293,30 @@ async function updateUserInDatabase(document, updates) {
 
 //GMAIL
 
-router.get('/users/email/superadmin', async (req, res) => {
-    try {
-        const users = await orm.usuarios.findMany({
-            include: {
-                usuarios_roles: true
-            },
-            where: {
-                usuarios_roles: {
-                    some: {
-                        id_rol: 2 // Reemplaza 'tuID' con el ID que estás buscando superadmin(2)
-                    }
+async function getSuperEmails() {
+    const users = await orm.usuarios.findMany({
+        include: {
+            usuarios_roles: true
+        },
+        where: {
+            usuarios_roles: {
+                some: {
+                    id_rol: 2 // Reemplaza 'tuID' con el ID que estás buscando superadmin(2)
                 }
             }
+        }
+    });
 
-        });
+    var direcciones = users.map(user => user.direccion_usuario);
+    direcciones = direcciones.join(', ')
+    return direcciones;
+}
 
-        const direcciones = users.map(user => user.direccion_usuario);
+router.get('/users/email/superadmin', async (req, res) => {
+    try {
+        var direcciones = await getSuperEmails();
 
-
-        res.send(direcciones.join(', '));
+        res.send(direcciones);
 
     } catch (error) {
         console.error("Error emails fetching", error);
@@ -340,28 +344,38 @@ router.get('/users/email/date', async (req, res) => {
 });
 
 
-//obtiene los usuarios creados en una fecha especifica y lo manda en archivo xml
+
+function toXlsx(usersCreated) {
+    const ws = xlsx.utils.json_to_sheet(usersCreated);
+    const wb = xlsx.utils.book_new();
+    xlsx.utils.book_append_sheet(wb, ws, "Usuarios");
+    const buf = xlsx.write(wb, { type: 'buffer' });
+    return buf;
+}
+
+async function getUsersInDate(req) {
+    const date = new Date(req.params.date);
+
+    const usersCreated = await orm.usuarios.findMany({
+        where: {
+            fecha_registro_usuario: date
+        }
+    });
+    return usersCreated;
+}
+
+//obtiene los usuarios creados en una fecha especifica y lo manda en archivo xlsx
 router.get('/users/email/created/:date', async (req, res) => {
     try {
 
-        const date = new Date(req.params.date)
-
-        const usersCreated = await orm.usuarios.findMany({
-            where: {
-                fecha_registro_usuario: date
-            }
-        });
+        const usersCreated = await getUsersInDate(req);
 
         if (usersCreated.length == 0) {
             res.status(204).json({ info: "Not Users in date" });
         } else {
-            const ws = xlsx.utils.json_to_sheet(usersCreated);
-            const wb = xlsx.utils.book_new();
-            xlsx.utils.book_append_sheet(wb, ws, "Usuarios");
-            const buf = xlsx.write(wb, { type: 'buffer' });
             res.setHeader('Content-Disposition', 'attachment; filename="Usuarios.xlsx"');
             res.type('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            res.send(buf);
+            res.send(toXlsx(usersCreated));
         }
 
     } catch (error) {
@@ -370,4 +384,9 @@ router.get('/users/email/created/:date', async (req, res) => {
     }
 });
 
+
+
 export default router;
+
+
+
