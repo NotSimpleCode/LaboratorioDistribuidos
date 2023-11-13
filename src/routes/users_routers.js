@@ -11,7 +11,7 @@ import xlsx from 'xlsx';
 const inMemoryStorage = multer.memoryStorage();
 const uploadStrategy = multer({ storage: inMemoryStorage }).single('image');
 const blobService = azureStorage.createBlobService();
-const containerName = 'imagenes';
+const containerName = 'imagesusers';
 
 const getBlobName = originalName => {
     const identifier = Math.random().toString().replace(/0\./, '');
