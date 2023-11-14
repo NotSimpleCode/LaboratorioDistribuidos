@@ -1,7 +1,7 @@
-import CrudService from './CrudService';
+import ConnectionsCrudService from './ConnectionsCrudService';
 import axios from 'axios';
 
-class LoginService extends CrudService {
+class LoginService extends ConnectionsCrudService {
     constructor() {
         super('login');
     }

@@ -5,10 +5,11 @@ import UploadService from '../services/UploadService'
 
 export const useUserStore = defineStore('user', {
     state: () => ({
+        rowSizes: [10, 20, 30, 40, 50],
         users: [],
         filteredUsers: [],
         currentPage: 1,
-        usersPerPage: 20,
+        usersPerPage: 10,
         totalPages: 0,
         totalUsers: 0,
     }),
@@ -35,7 +36,7 @@ export const useUserStore = defineStore('user', {
             });
         },
         async fetchPage() {
-            this.users = await UserService.fetchPage(this.currentPage, this.getToken());
+            this.users = await UserService.fetchPage(this.currentPage, this.usersPerPage, this.getToken());
         },
         getUserDetails(userId) {
             this.fetchPage()
@@ -75,10 +76,15 @@ export const useUserStore = defineStore('user', {
         async fetchTotalUsers() {
             this.totalUsers = await UserService.fetchCount(this.getToken())
         },
+        async deleteUser(userId) {
+            return await UserService.deleteUser(userId, this.getToken())
+        },
         calculateTotalPages() {
             this.totalPages = Math.ceil(this.totalUsers / this.usersPerPage);
         },
-
+        async fetchUsersByDate(date) {
+            return await UserService.fetchUsersByDate(date)
+        }
     }
 
 })

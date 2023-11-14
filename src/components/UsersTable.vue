@@ -6,7 +6,17 @@
             <input id="tableSearch" class="search-button" type="button" value="">
         </div>
         <div class="options">
-
+        </div>
+        <div class="report-container">
+            <PopUp v-if="isUserAdmin()" />
+            <div>
+                <label class="page-size-label">Filas por página </label>
+                <select v-model="userStore.usersPerPage" @change="fetchData()" id="page-size-select">
+                    <option v-for="size in userStore.rowSizes" :value="size" :key="size">
+                        {{ size }}
+                    </option>
+                </select>
+            </div>
         </div>
     </section>
     <div class="user-table-page">
@@ -23,40 +33,40 @@
             </div>
             <div v-for="user in filteredUsers" :key="user">
                 <div class="user-row row" @click="showUserDetails(user.documento_usuario)">
-                    <i @click="changeState(user)" class="bi bi-person-x"></i>
+                    <i @click.stop="deletePerson(user.documento_usuario)" class="bi bi-person-x"></i>
                     <div class="user-cell user-photo" :style="getUserImageStyle(user.foto_usuario)">
                     </div>
                     <div :class="{ 'user-cell': true, 'user-cell-empty': !user.documento_usuario }">{{
-                                            user.documento_usuario ||
-                                            noDataValue }}</div>
+                        user.documento_usuario ||
+                        noDataValue }}</div>
                     <div :class="{ 'user-cell': true, 'user-cell-empty': !user.nombre_usuario }"
                         :title="user.nombre_usuario">{{
-                                                user.nombre_usuario ||
-                                                noDataValue
-                                                }}
+                            user.nombre_usuario ||
+                            noDataValue
+                        }}
                     </div>
                     <div :class="{ 'user-cell': true, 'user-cell-empty': !user.apellido_usuario }"
                         :title="user.apellido_usuario">{{
-                                                user.apellido_usuario ||
-                                                noDataValue
-                                                }}</div>
+                            user.apellido_usuario ||
+                            noDataValue
+                        }}</div>
                     <div :class="{ 'user-cell': true, 'user-cell-empty': !user.celular_usuario }"
                         :title="user.celular_usuario">
                         {{
-                                                user.celular_usuario ||
-                                                noDataValue
-                                                }}</div>
+                            user.celular_usuario ||
+                            noDataValue
+                        }}</div>
                     <div :class="{ 'user-cell': true, 'user-cell-empty': !user.fecha_registro_usuario }"
                         :title="getDate(user.fecha_registro_usuario)">{{
-                                                getDate(user.fecha_registro_usuario) }}</div>
+                            getDate(user.fecha_registro_usuario) }}</div>
                     <div :class="{ 'user-cell': true, 'user-cell-empty': !user.estado_usuario }">{{ user.estado_usuario ||
-                                            noDataValue
-                                            }}
+                        noDataValue
+                    }}
                     </div>
                     <div :class="{ 'user-cell': true, 'user-cell-empty': !user.direccion_usuario }"
                         :title="user.direccion_usuario">
                         {{ user.direccion_usuario ||
-                                                noDataValue }}</div>
+                            noDataValue }}</div>
                 </div>
             </div>
             <UserDetails v-if="showDetails" :person-id="selectedUserId" :show="showDetails" @close="closeUserDetails" />
@@ -64,6 +74,7 @@
         <div class="pagination">
             <label>{{ getActualRange() }}</label>
             <div>
+                <button @click="firstPage()" :disabled="currentPage.valueOf === 1" class="nav-button">Inicio</button>
                 <button @click="fastBackward()" :disabled="currentPage.valueOf === 1" class="nav-button"><i
                         class="bi bi-chevron-double-left"></i></button>
                 <button @click="previousPage" :disabled="userStore.currentPage === 1" class="nav-button"><i
@@ -76,6 +87,7 @@
                         class="bi bi-chevron-right"></i></button>
                 <button @click="fastForward()" :disabled="currentPage.valueOf === 1" class="nav-button"><i
                         class="bi bi-chevron-double-right"></i></button>
+                <button @click="lastPage()" :disabled="currentPage.valueOf === 1" class="nav-button">Fin</button>
             </div>
 
         </div>
@@ -85,21 +97,23 @@
 <script setup>
 import { ref, computed, onBeforeMount } from 'vue';
 import { useUserStore } from '../store/UserStore';
-import UserDetails from './UserDetails.vue'
 import { useUtilityStore } from '../store/UtilityStore';
+import { useAuthStore } from '../store/AuthStore';
+import { useConnectionStore } from '../store/ConnStore'
+import UserDetails from './UserDetails.vue'
+import PopUp from './DatePopUp.vue'
 
-const noDataValue = 'Vacío';
 const userStore = useUserStore()
 const utilityStore = useUtilityStore()
+const authStore = useAuthStore()
+const connectionStore = useConnectionStore()
+
+const noDataValue = 'Vacío';
 const searchTerm = ref("")
 const showDetails = ref(false);
 const selectedUserId = ref(null);
 const currentPage = computed(() => userStore.currentPage);
 const totalPages = computed(() => userStore.totalPages);
-
-const changeState = (user) => {
-    console.log(user)
-}
 
 const showUserDetails = (userId) => {
     selectedUserId.value = userId;
@@ -136,12 +150,30 @@ const filterUsers = async () => {
     }
 };
 
+async function deletePerson(id_usuario) {
+    const response = await userStore.deleteUser(id_usuario)
+    if (response.error) {
+        const user = await getUser(id_usuario)
+        alert(`Debe eliminar al usuario ${user.nick_usuario} antes de eliminar a esta persona`)
+    }
+
+    userStore.fetchPage()
+}
+
+async function getUser(userId) {
+    return await connectionStore.fetchByUserId(userId)
+}
+
 const getUserImageStyle = (foto_usuario) => {
     const defaultImageUrl = 'url(src/assets/user.svg)';
     const backgroundImage = foto_usuario ? `url(${foto_usuario})` : defaultImageUrl;
 
     return { 'background-image': backgroundImage };
 };
+
+function isUserAdmin() {
+    return authStore.isUserAdmin() || authStore.isSuperAdmin()
+}
 
 const previousPage = () => {
     if (currentPage.value > 1) {
@@ -163,11 +195,15 @@ const changePage = async (page) => {
 };
 
 const fetchData = async () => {
+    userStore.calculateTotalPages()
+    if (currentPage.value > totalPages.value && totalPages.value != 0) {
+        userStore.currentPage = totalPages.value
+    }
     await userStore.fetchPage();
 };
 
 const visiblePages = computed(() => {
-    const pageSize = 10; // Número de elementos por página
+    const pageSize = 10;
 
     const start = Math.floor((currentPage.value - 1) / pageSize) * pageSize + 1;
     const end = Math.min(start + pageSize - 1, totalPages.value);
@@ -181,8 +217,9 @@ const visiblePages = computed(() => {
 })
 
 const getActualRange = () => {
+    const actualPageUsers = userStore.users.length
     const start = (currentPage.value * userStore.usersPerPage) - userStore.usersPerPage + 1;
-    const end = currentPage.value * userStore.usersPerPage;
+    const end = ((currentPage.value - 1) * userStore.usersPerPage) + actualPageUsers;
     return `${start}-${end} de ${userStore.totalUsers}`;
 };
 
@@ -203,17 +240,28 @@ const fastForward = () => {
     fetchData()
 }
 
+const firstPage = () => {
+    userStore.currentPage = 1
+    fetchData()
+}
+
+const lastPage = () => {
+    userStore.currentPage = totalPages.value
+    fetchData()
+}
+
 onBeforeMount(() => {
     userStore.onInit()
     fetchData()
 })
+
 
 </script>
   
 <style scoped>
 .search-container {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     grid-template-rows: 1fr 2fr;
     background-color: var(--primary-color);
     margin: 10px;
@@ -279,6 +327,31 @@ onBeforeMount(() => {
     grid-column: 2/3;
 }
 
+.report-container {
+    grid-row: 2/3;
+    grid-column: 3/4;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding-right: 10px;
+}
+
+.page-size-label {
+    color: gray;
+}
+
+#page-size-select,
+#page-size-select>option {
+    color: var(--third-color);
+    border: 1px solid lightgray;
+    border-radius: 10px;
+}
+
+#page-size-select:focus {
+    outline: none;
+}
+
+/* Estilos de tabla */
 .user-table-page {
     position: relative;
 
@@ -328,11 +401,13 @@ onBeforeMount(() => {
 
 .user-row .user-photo {
     margin-left: 20px;
-    width: 35px;
-    height: 35px;
-    background-size: contain;
+    width: 22px;
+    height: 40px;
+    border-radius: 100%;
+    background-size: cover;
     background-repeat: no-repeat;
     background-image: url('../assets/user.svg');
+    background-position: center;
 }
 
 .user-header .user-cell {
@@ -355,9 +430,8 @@ onBeforeMount(() => {
     color: red;
     cursor: pointer;
     position: absolute;
-    left: 9%;
+    left: 7%;
     display: none;
-    z-index: 20;
 }
 
 .user-row:hover .bi-person-x {

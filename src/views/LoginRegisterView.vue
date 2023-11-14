@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <transition name="fade" mode="out-in">
-            <LoginUser v-if="authStore.showLogin"></LoginUser>
+            <LoginUser v-if="authStore.showLogin && !authStore.showUserRegister"></LoginUser>
             <RegisterUser v-else></RegisterUser>
         </transition>
 
@@ -25,7 +25,9 @@ onMounted(() => {
     if (authStore.onlineUser.token) {
         roleStore.fetchRoles()
     }
+
 })
+
 
 </script>
   

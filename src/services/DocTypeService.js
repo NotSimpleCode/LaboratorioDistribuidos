@@ -1,6 +1,6 @@
-import CrudService from "./CrudService";
+import RolesCrudService from "./RolesCrudService";
 import axios from 'axios'
-class DocTypeService extends CrudService {
+class DocTypeService extends RolesCrudService {
     constructor() {
         super('typesDocument')
     }
@@ -11,7 +11,8 @@ class DocTypeService extends CrudService {
             return response.data
         } catch (error) {
             console.error(`Error al obtener ${this.entity}`);
-            throw error;
+            console.log("Se cargaran los tipos de documento por defecto");
+            return [{ 'id_tipo_documento': 1, 'tipo_documento': 'CC' }, { 'id_tipo_documento': 2, 'tipo_documento': 'TI' }, { 'id_tipo_documento': 3, 'tipo_documento': 'CE' }, { 'id_tipo_documento': 4, 'tipo_documento': 'OT' }]
         }
     }
 }

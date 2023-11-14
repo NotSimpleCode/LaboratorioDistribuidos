@@ -6,7 +6,7 @@ import router from '../router'
 
 export const useAuthStore = defineStore('auth', {
     state: () => ({
-        showLogin: false,
+        showLogin: true,
         showUserRegister: false,
         onlineUser: { nick: null, rol: null, foto: null, token: null, personId: null },
         password: null,
@@ -50,8 +50,11 @@ export const useAuthStore = defineStore('auth', {
             const response = await UserService.postRegisterUser(newUser)
         },
         async registerConnection(connection) {
-            const response = await ConnectionService.postRegisterConnection(connection, this.onlineUser.token)
+            const response = await ConnectionService.postRegisterConnection(connection)
 
+        },
+        async registerConnectionAdmin(connection) {
+            const response = await ConnectionService.postRegisterConnectionAdmin(connection, this.onlineUser.token)
         },
         logout() {
             this.onlineUser = { nick: null, rol: null, foto: null, token: null, personId: null }
@@ -59,14 +62,17 @@ export const useAuthStore = defineStore('auth', {
             this.showLogin = true
             this.showUserRegister = false
         },
-        async reloadOnlinePerson() {
-            await this.updateOnlinePerson(this.onlineUser.nick, this.onlineUser.token)
-        },
         isUserAdmin() {
             if (!this.onlineUser.rol) {
                 return false
             }
-            return this.onlineUser.rol.includes('administrador')
+            return this.onlineUser.rol === 'Administrador'
+        },
+        isSuperAdmin() {
+            if (!this.onlineUser.rol) {
+                return false
+            }
+            return this.onlineUser.rol === 'SuperAdministrador'
         }
     },
     persist: {

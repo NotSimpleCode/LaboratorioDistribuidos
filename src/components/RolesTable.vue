@@ -18,18 +18,32 @@
                 <div class="role-cell">Estado</div>
                 <div class="role-cell">Descripción</div>
             </div>
-            <div v-for="role in filteredRoles  " :key="role.id_rol" class="role-row row"> <!-- Filas de datos -->
+            <div v-for="role in filteredRoles" :key="role.id_rol" class="role-row row">
+                <!-- Filas de datos -->
                 <div class="role-cell">{{ role.id_usuario }}</div>
-                <div class="role-cell">{{ role.nick_usuario }}
+                <i @click.stop="deleteConnection(role.id_usuario, role.id_rol)" class="bi bi-person-x"></i>
+
+                <div v-if="!role.isEditingNick" class="role-cell">
+                    {{ role.nick_usuario }}
+                    <i v-if="!role.isEditingNick" class="bi bi-pencil-square" id="updateNick-btn"
+                        @click="startEditing(role)"></i>
                 </div>
+
+                <div v-else>
+                    <input type="text" class="role-cell" v-model="updatedNick" id="nick-input" @input="validateNick()">
+                    <i v-if="isValidNick" class="bi bi-check-circle-fill" @click="updateNick(role)"></i>
+                    <i class="bi bi-x-circle-fill" @click="cancelEditing(role)"></i>
+                </div>
+
                 <div class="role-cell">{{ role.roles.nombre_rol }}</div>
-                <div :class="{ 'role-cell': true, 'role-cell-empty': !role.roles.estado_rol }">{{ role.roles.estado_rol ||
-                    noDataValue
-                }}
-                </div>
-                <div :class="{ 'role-cell': true, 'role-cell-empty': !role.roles.descripcion_rol }">{{
-                    role.roles.descripcion_rol ||
-                    noDataValue }}
+
+                <select v-model="role.roles.estado_rol" class='role-cell status-select' @change="updateStatus(role)">
+                    <option v-for="status in utilityStore.status" :value="status" :key="status">{{ status }}
+                    </option>
+                </select>
+
+                <div :class="{ 'role-cell': true, 'role-cell-empty': !role.roles.descripcion_rol }">
+                    {{ role.roles.descripcion_rol || noDataValue }}
                 </div>
             </div>
             <div class="pagination">
@@ -56,10 +70,19 @@
 <script setup>
 import { ref, computed, onBeforeMount } from 'vue';
 import { useConnectionStore } from '../store/ConnStore';
+import { useUtilityStore } from '../store/UtilityStore';
+import { useAuthStore } from '../store/AuthStore';
 
 const connectionStore = useConnectionStore()
+const utilityStore = useUtilityStore()
+const authStore = useAuthStore()
+
 const noDataValue = 'Vacío';
 const searchTerm = ref("")
+
+const actualNick = ref(null)
+const updatedNick = ref(null)
+const isValidNick = ref(false)
 
 const currentPage = computed(() => connectionStore.currentPage);
 const totalPages = computed(() => connectionStore.totalPages);
@@ -119,6 +142,46 @@ const visiblePages = computed(() => {
     return pages;
 })
 
+function validateNick() {
+    isValidNick.value = utilityStore.validateNickName(updatedNick.value) && updatedNick.value !== actualNick.value
+}
+
+function startEditing(role) {
+    role.isEditingNick = true;
+    actualNick.value = role.nick_usuario
+    updatedNick.value = role.nick_usuario;
+}
+
+const updateNick = async (role) => {
+    const exist = await userExist(updatedNick.value)
+    if (!exist) {
+        console.log(updatedNick.value)
+        const response = await connectionStore.putUserByNickName(actualNick.value, updatedNick.value)
+        console.log(response)
+        connectionStore.fetchPage()
+    } else {
+        alert("Este nombre de usuario ya existe")
+    }
+    role.isEditingNick = false;
+}
+function cancelEditing(role) {
+    role.isEditingNick = false;
+}
+async function updateStatus(role) {
+    console.log(role.roles.estado_rol);
+    console.log(role.nick_usuario);
+    const response = await connectionStore.putUserByNickName(role.nick_usuario, role.roles.estado_rol)
+    console.log(response);
+}
+
+async function deleteConnection(id_usuario, id_rol) {
+    const response = await connectionStore.deleteConnection(id_usuario, id_rol)
+    console.log(response)
+}
+
+const userExist = async (userNickname) => {
+    return await authStore.existsNickname(userNickname)
+}
 
 // const getActualRange = () => {
 //     const start = (currentPage.value * connectionStore.usersPerPage) - connectionStore.usersPerPage + 1;
@@ -242,7 +305,8 @@ fetchData()
     padding: 10px;
     align-items: center;
     text-align: center;
-    max-height: 40px;
+    max-height: 45px;
+    min-height: 45px;
 }
 
 
@@ -252,6 +316,7 @@ fetchData()
     color: var(--black-color);
     font-weight: bold;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.08);
+    z-index: 10;
 }
 
 
@@ -285,6 +350,53 @@ fetchData()
 
 .role-row {
     height: 50px;
+    cursor: pointer;
+    position: relative;
+}
+
+#nick-input {
+    width: 80px;
+    padding: 0;
+    border: 1px solid lightgray;
+    outline: none;
+    text-align: center;
+}
+
+.bi-pencil-square,
+.bi-person-x {
+    width: 20px;
+    height: 20px;
+    color: var(--third-color);
+    position: absolute;
+    display: none;
+}
+
+.bi-person-x {
+    color: red;
+    left: 2%;
+}
+
+.bi-check-circle-fill {
+    color: green;
+}
+
+.bi-x-circle-fill {
+    color: red;
+}
+
+.role-row:hover .bi-person-x,
+.role-row:hover .bi-pencil-square {
+    display: inline-block;
+}
+
+.role-row .bi-person-x:hover {
+    background-color: red;
+    color: white;
+}
+
+.role-row .bi-pencil-square:hover {
+    background-color: var(--third-color);
+    color: white;
 }
 
 .pagination {
@@ -334,5 +446,10 @@ fetchData()
 .current-page {
     background-color: rgba(0, 123, 255, 0.7);
     color: var(--primary-color);
+}
+
+.status-select {
+    width: 80px;
+    margin: auto;
 }
 </style>

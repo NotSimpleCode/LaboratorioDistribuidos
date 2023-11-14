@@ -9,14 +9,25 @@
     </main>
 </template>
 <script setup>
+import { onUnmounted, onBeforeMount } from 'vue';
 import AppHeader from '../components/AppHeader.vue';
 import TablesNav from '../components/TablesNav.vue';
 import UsersTable from '../components/UsersTable.vue';
 import RolesTable from '../components/RolesTable.vue';
 import OnlyRolesTable from '../components/OnlyRolesTable.vue';
 import { useTableStore } from '../store/TableStore'
+import { useUtilityStore } from '../store/UtilityStore'
 
 const tableStore = useTableStore()
+const utitlityStore = useUtilityStore()
+
+onBeforeMount(() => {
+    utitlityStore.fetchDocTypes()
+})
+
+onUnmounted(() => {
+    tableStore.setActiveSubMenu('persons')
+})
 
 </script>
 

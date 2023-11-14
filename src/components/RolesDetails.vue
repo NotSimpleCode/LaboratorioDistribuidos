@@ -1,7 +1,7 @@
 <template>
     <div class="role-details" v-if="show && roleLoaded">
-        <div class="details-content">
-            <h2><span v-if="isUserAdmin()">Modificar/</span>Ver Datos de Rol</h2>
+        <div v-if="!roleStore.isRoleRegister" class="details-content">
+            <h2 class="role-details-title"><span v-if="isSuperAdmin()">Modificar/</span>Ver Datos de Rol</h2>
             <div v-if="role" class="user-content">
                 <form @submit.prevent="updateRole" id="roleForm">
                     <div class="role-detail">
@@ -10,14 +10,19 @@
                     </div>
                     <div class="role-detail">
                         <label>Rol:</label>
-                        <input type="text" id="miInput" :disabled="!isUserAdmin()" :style="adminStyle()"
+                        <input type="text" id="miInput" :disabled="!isSuperAdmin()" :style="adminStyle()"
                             v-model="updatedRole.nombre_rol" :class="{ 'invalid': !isNameValid }"
                             @input="validateName(updatedRole.nombre_rol)" />
                     </div>
                     <div class="role-detail">
                         <label>Estado:</label>
-                        <input type="text" :disabled="!isUserAdmin()" :style="adminStyle()" v-model="updatedRole.estado_rol"
-                            :class="{ 'invalid': !isValidStatus }" @input="validateStatus(updatedRole.estado_rol)" />
+                        <select v-model="updatedRole.estado_rol" id="status-select" :disabled="!isSuperAdmin()"
+                            :style="adminStyle()">
+                            <option v-for="status in utilityStore.status" :value="status" :key="status">{{ status }}
+                            </option>
+                        </select>
+                        <!-- <input type="text" :disabled="!isUserAdmin()" :style="adminStyle()" v-model="updatedRole.estado_rol"
+                            :class="{ 'invalid': !isValidStatus }" @input="validateStatus(updatedRole.estado_rol)" /> -->
                     </div>
                     <div class="role-detail">
                         <label>Personas con Rol:</label>
@@ -25,19 +30,67 @@
                     </div>
                     <div class="role-detail">
                         <label>Fecha de Creación:</label>
-                        <input type="text" :placeholder="utilityStore.formatDate(role.fecha_creacion_rol)" disabled />
+                        <input type="text" :placeholder="utilityStore.formatDate(role.fecha_creacion_rol)"
+                            :style="adminStyle()" disabled />
                     </div>
                     <div class="role-detail">
                         <label>Descripción:</label>
-                        <input type="text" id="description-input" :disabled="!isUserAdmin()" :style="adminStyle()"
+                        <input type="text" id="description-input" :disabled="!isSuperAdmin()" :style="adminStyle()"
                             v-model="updatedRole.descripcion_rol" :class="{ 'invalid': !isDescriptionValid }"
                             @input="validateDescription(updatedRole.descripcion_rol)" />
                     </div>
                 </form>
             </div>
-            <input class="update-btn btn" v-if="isUserAdmin()" type="submit" form="roleForm" value="Actualizar"
+            <input id="up-btn" class="update-btn btn" v-if="isSuperAdmin()" type="submit" form="roleForm" value="Actualizar"
                 :disabled="!isDataValid()" />
-            <input class="close-btn btn" type="button" :value="isUserAdmin() ? 'Cancelar' : 'Volver'" @click="closeDetails">
+
+            <input class="close-btn btn" type="button" :value="isSuperAdmin() ? 'Cancelar' : 'Volver'"
+                @click="closeDetails">
+        </div>
+        <!-- Formulario para crear rol -->
+        <div v-else class="details-content">
+            <h2 class="role-details-title">Crear Rol</h2>
+            <div class="user-content">
+                <form @submit.prevent="createRole" id="createRoleForm">
+                    <div class="role-detail">
+                        <label>Id Rol:</label>
+                        <input type="text" v-model="updatedRole.id_rol" :class="{ 'invalid': !isValidNumber }"
+                            @input="validateIdField(updatedRole.id_rol)" />
+                    </div>
+                    <div class="role-detail">
+                        <label>Rol:</label>
+                        <input type="text" id="miInput" v-model="updatedRole.nombre_rol"
+                            :class="{ 'invalid': !isNameValid }" @input="validateName(updatedRole.nombre_rol)" />
+                    </div>
+                    <div class="role-detail">
+                        <label>Estado:</label>
+                        <!-- <input type="text" v-model="updatedRole.estado_rol" :class="{ 'invalid': !isValidStatus }"
+                            @input="validateStatus(updatedRole.estado_rol)" /> -->
+                        <select v-model="updatedRole.estado_rol" id="status-select">
+                            <option v-for="status in utilityStore.status" :value="status" :key="status">{{ status }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="role-detail">
+                        <label>Personas con Rol:</label>
+                        <input type="text" :value="updatedRole.numero_personas_roles" disabled />
+                    </div>
+                    <div class="role-detail">
+                        <label>Fecha de Creación:</label>
+                        <input type="text" disabled>
+                    </div>
+                    <div class="role-detail">
+                        <label>Descripción:</label>
+                        <input type="text" id="description-input" v-model="updatedRole.descripcion_rol"
+                            :class="{ 'invalid': !isDescriptionValid }"
+                            @input="validateDescription(updatedRole.descripcion_rol)" />
+                    </div>
+                </form>
+            </div>
+            <input id="up-btn" class="update-btn btn" v-if="isSuperAdmin()" type="submit" form="createRoleForm"
+                value="Crear" :disabled="!isValidCreate()" />
+
+            <input class="close-btn btn" type="button" value="Cancelar" @click="closeDetails">
         </div>
     </div>
 </template>
@@ -60,6 +113,15 @@ const isEditingDate = ref(false)
 const isNameValid = ref(true)
 const isDescriptionValid = ref(true)
 const isValidStatus = ref(true)
+const isValidNumber = ref(true)
+
+const isAdmin = () => {
+    return authStore.isUserAdmin()
+}
+
+const isSuperAdmin = () => {
+    return authStore.isSuperAdmin()
+}
 
 const props = defineProps({
     roleId: Number,
@@ -79,12 +141,17 @@ const loadRoleDetails = async () => {
     if (!roleLoaded.value) {
         role.value = await roleStore.getRoleById(props.roleId);
         updatedRole.value = JSON.parse(JSON.stringify(role.value));
-
-        // updatedUser.value.id_usuario = user.value.id_usuario
-        // updatedUser.value.fecha_nacimiento_usuario = user.value.fecha_nacimiento_usuario
         roleLoaded.value = true;
     }
 };
+
+const createRole = async () => {
+    updatedRole.value.fecha_creacion_rol = new Date().toISOString()
+    updatedRole.value.id_rol = parseInt(updatedRole.value.id_rol)
+    const response = await roleStore.postRole(updatedRole.value)
+    closeDetails()
+    roleStore.fetchRoles()
+}
 
 const updateRole = async () => {
     const data = {
@@ -92,6 +159,7 @@ const updateRole = async () => {
         estado_rol: updatedRole.value.estado_rol,
         descripcion_rol: updatedRole.value.descripcion_rol
     }
+    console.log(data);
     const response = await roleStore.updateRole(props.roleId, data)
     console.log(response.message)
     closeDetails()
@@ -99,28 +167,22 @@ const updateRole = async () => {
 }
 
 const adminStyle = () => {
-    return { border: isUserAdmin() ? '1px solid lightgray' : 'none' }
+    return { border: isSuperAdmin() ? '1px solid lightgray' : 'none' }
 }
 
 const closeDetails = () => {
-    authStore.reloadOnlinePerson()
     emits('close');
 };
-
-function isUserAdmin() {
-    const isAdmin = authStore.onlineUser.rol.includes('administrador')
-    const isOnlineUser = authStore.onlineUser.personId === props.roleId
-    return isAdmin || isOnlineUser
-}
 
 //validar que los campos cambiados sean validos
 function isDataValid() {
     return (isUserModified() && isNameValid.value && isValidStatus.value && isDescriptionValid.value)
 }
-
+function isValidCreate() {
+    return (updatedRole.value.id_rol !== null) && (updatedRole.value.nombre_rol !== null) && isNameValid.value && isValidNumber.value
+}
 //Validar que hayan cambios en los campos
 function isUserModified() {
-    console.log(role.value.nombre_rol)
     if (updatedRole.value.nombre_rol != role.value.nombre_rol) {
         return true;
     }
@@ -142,8 +204,8 @@ const validateDescription = (description) => {
     isDescriptionValid.value = utilityStore.validateTextField(description)
 }
 
-const validateStatus = (status) => {
-    isValidStatus.value = utilityStore.validateStatus(status)
+const validateIdField = (id) => {
+    isValidNumber.value = utilityStore.validateRolId(id)
 }
 
 function handleDocumentClick(event) {
@@ -162,10 +224,16 @@ watchEffect(() => {
 });
 
 onMounted(() => {
-    loadRoleDetails()
+    if (roleStore.isRoleRegister) {
+        roleLoaded.value = true
+        console.log(updatedRole.value);
+    } else {
+        loadRoleDetails()
+    }
 })
 
 onUnmounted(() => {
+    roleStore.isRoleRegister = false
     document.removeEventListener('click', handleDocumentClick);
 });
 </script>
@@ -195,9 +263,10 @@ onUnmounted(() => {
     grid-template-rows: .3fr 2fr .3fr .3fr;
 }
 
-h2 {
+.role-details-title {
     grid-column: 1/-1;
     text-align: center;
+    color: black;
 }
 
 #doc-update-select {
@@ -206,6 +275,10 @@ h2 {
     appearance: none;
     padding: 5px;
     font-weight: bold;
+}
+
+label {
+    color: black;
 }
 
 .role-detail {
@@ -219,14 +292,6 @@ h2 {
 
 .birthdate-text {
     font-weight: bold;
-}
-
-.user-photo {
-    height: 140px;
-    width: 140px;
-    background-size: contain;
-    background-repeat: no-repeat;
-    align-self: center;
 }
 
 .detail-empty {
@@ -287,7 +352,8 @@ input::placeholder:focus {
 
 .invalid {
     font-style: italic;
-    background-color: rgba(255, 0, 0, 0.5);
+    background-color: #ff0800d4;
+    border: 1px solid lightgray;
 }
 
 input[type="number"]::-webkit-inner-spin-button,
@@ -299,6 +365,11 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .description-input {
     height: 30px;
+}
+
+#up-btn {
+    color: white;
+
 }
 </style>
   

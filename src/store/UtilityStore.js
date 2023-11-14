@@ -7,11 +7,13 @@ import RoleService from '../services/RoleService'
 
 export const useUtilityStore = defineStore('utility', {
     state: () => ({
-        docTypes: { 'CC': 1, 'TI': 2, 'CE': 3, 'OT': 4 },
+        userAdminRol: "Administrador",
+        superAdminRol: "SuperAdministrador",
+        docTypes: null,
         localeFormat: "dd MMMM, yyyy",
         dateRegion: { timeZone: 'America/Bogota', locale: es },
         defaultFormat: "yyyy-MM-dd",
-        status: ['A', 'B', 'C'],
+        status: ['A', 'I'],
         maxAge: 90, // Edad maxima que puede tener el usuario 
         minAge: 14, // || minima ||
     }),
@@ -66,16 +68,24 @@ export const useUtilityStore = defineStore('utility', {
             }
             return this.status.includes(input);
         },
+        validateRolId(input) {
+            const regex = /^\S{1,5}$/
+            return regex.test(input) && !isNaN(input)
+        },
+        validateNickName(input) {
+            const regex = /^[a-zA-Z0-9_]{1,10}$/
+            return regex.test(input)
+
+        },
         async fetchDocTypes() {
             const docs = await DocTypeService.fetchAllDocs();
-            console.log(docs);
-            if (docs) {
-                this.docTypes = docs;
-            }
+            this.docTypes = docs;
+            console.log(docs)
         },
         async fetchRoles() {
             const roles = await RoleService.fetchAll()
 
-        }
+        },
+
     }
 });

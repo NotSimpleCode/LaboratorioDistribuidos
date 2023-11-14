@@ -15,7 +15,7 @@
                 :class="{ 'invalid': !isValidDocument }" @input="validateDocument(newUser.documento_usuario)" required />
             <input type="text" v-model="newUser.celular_usuario" placeholder="Celular *"
                 :class="{ 'invalid': !isValidCellphone }" @input="validateCellphone(newUser.celular_usuario)" required />
-            <input type="email" v-model="newUser.direccion_usuario" placeholder="Dirección *" required />
+            <input type="email" v-model="newUser.direccion_usuario" placeholder="Correo *" required />
             <input type="date" v-model="newUser.fecha_nacimiento_usuario" placeholder="Fecha de Nacimiento *"
                 :min="utilityStore.calculateDate(utilityStore.maxAge)"
                 :max="utilityStore.calculateDate(utilityStore.minAge)" required />
@@ -37,7 +37,7 @@
             <input v-if="authStore.isUserAdmin()" id="userid-input" class="user-id-admin" type="text"
                 v-model="newUser.documento_usuario" placeholder="ID de Persona *" required />
             <select id="role-select" v-if="authStore.isUserAdmin()" v-model="connection.id_rol">
-                <option v-for="role in roleStore.roles" :key="role.id_rol" :value="role.id_rol">
+                <option v-for="role in filteredRoles()" :key="role.id_rol" :value="role.id_rol">
                     {{ role.nombre_rol }}
                 </option>
             </select>
@@ -122,17 +122,29 @@ const isDataComplete = () => {
     return requiredFields.every(field => !!connection.value[field]);
 }
 
+const userExist = async (userNickname) => {
+    return await authStore.existsNickname(userNickname)
+}
+
 const registerPerson = async () => {
     newUser.value.fecha_registro_usuario = new Date().toISOString()
     newUser.value.fecha_nacimiento_usuario = new Date(newUser.value.fecha_nacimiento_usuario).toISOString()
     newUser.value.documento_usuario = parseInt(newUser.value.documento_usuario)
-    newUser.value.celular_usuario = utilityStore.formatCellphoneNumber(newUser.value.celular_usuario)
     await authStore.registerUser(newUser.value)
 }
 
 const registerConnection = async () => {
-    connection.value.id_usuario = parseInt(newUser.value.documento_usuario, 10)
-    await authStore.registerConnection(connection.value)
+    const exist = await userExist(connection.value.nick_usuario)
+    if (!exist) {
+        connection.value.id_usuario = parseInt(newUser.value.documento_usuario, 10)
+        if (isUserAdmin()) {
+            await authStore.registerConnectionAdmin(connection.value)
+        } else {
+            await authStore.registerConnection(connection.value)
+        }
+    } else {
+        alert("El usuario ya existe")
+    }
     await updateImg()
     authStore.toggleForm()
 }
@@ -143,7 +155,7 @@ const backToInfo = () => {
 
 const changeRegister = async () => {
     await registerPerson()
-    if (!authStore.isUserAdmin()) {
+    if (!isUserAdmin()) {
         isDataFill.value = !isDataFill.value
     } else {
         router.push({ name: 'information' });
@@ -173,6 +185,18 @@ const validateDocument = (document) => {
     } else {
         isValidDocument.value = utilityStore.validateOTDocument(document)
     }
+}
+
+const filteredRoles = () => {
+    if (authStore.isSuperAdmin()) {
+        return roleStore.roles;
+    } else {
+        return roleStore.roles.filter(role => !role.nombre_rol.includes('Admin'));
+    }
+}
+
+const isUserAdmin = () => {
+    return authStore.isUserAdmin || authStore.isSuperAdmin
 }
 
 const showPassword = () => {

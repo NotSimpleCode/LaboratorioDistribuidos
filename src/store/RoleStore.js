@@ -4,6 +4,7 @@ import { useAuthStore } from "./AuthStore";
 
 export const useRoleStore = defineStore('roles', {
     state: () => ({
+        isRoleRegister: false,
         roles: [],
         filteredRoles: [],
     }),
@@ -30,6 +31,9 @@ export const useRoleStore = defineStore('roles', {
         async updateRole(roleId, data) {
             return await RoleService.patchRole(roleId, data, this.getToken())
         },
+        async postRole(data) {
+            return await RoleService.postRole(data, this.getToken())
+        }
 
 
     }

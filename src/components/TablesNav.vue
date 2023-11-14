@@ -7,11 +7,10 @@
         <div class="submenu" :class="{ 'expanded': isActiveMenu('persons') }">
             <p :class="{ active: tableStore.activeSubMenu == 'persons' }" @click="activateSubMenu('persons')">Ver
                 Lista</p>
-            <p v-if="authStore.onlineUser.rol != null && authStore.onlineUser.rol.includes('admin')"
-                :class="{ active: tableStore.activeSubMenu === 'registrar' }" @click="openPersonRegister()">Registrar</p>
+            <p v-if="isAdmin || isSuperAdmin" :class="{ active: tableStore.activeSubMenu === 'registrar' }"
+                @click="openPersonRegister()">Registrar</p>
         </div>
-        <div v-if="authStore.onlineUser.rol != null && authStore.onlineUser.rol.includes('admin')" class="menu-item"
-            @click="toggleMenu('roles')">
+        <div v-if="isAdmin || isSuperAdmin" class="menu-item" @click="toggleMenu('roles')">
             <i class="bi bi-person-arms-up"></i>
             <p :class="{ active: tableStore.activeMenu === 'roles' }">Usuarios</p>
         </div>
@@ -20,28 +19,38 @@
             </p>
             <p :class="{ active: tableStore.activeSubMenu === 'registrar' }" @click="openUserRegister()">Registrar</p>
         </div>
-        <div v-if="authStore.onlineUser.rol != null && authStore.onlineUser.rol.includes('admin')" class="menu-item"
-            @click="toggleMenu('only_roles')">
+        <div v-if="isAdmin || isSuperAdmin" class="menu-item" @click="toggleMenu('only_roles')">
             <i class="bi bi-person-vcard"></i>
-            <p :class="{ active: tableStore.activeMenu === 'roles' }">Roles</p>
+            <p :class="{ active: tableStore.activeMenu === 'only_roles' }">Roles</p>
         </div>
         <div class="submenu" :class="{ 'expanded': isActiveMenu('only_roles') }">
             <p :class="{ active: tableStore.activeSubMenu === 'only_roles' }" @click="activateSubMenu('only_roles')">Ver
                 Lista
             </p>
-            <p :class="{ active: tableStore.activeSubMenu === 'registrar' }">Registrar</p>
+            <p v-if="isSuperAdmin" :class="{ active: tableStore.activeSubMenu === 'registrar' }" @click="showRoleDetails()">
+                Registrar</p>
+            <RolesDetails v-if="showDetails" :show="showDetails" @close="closeUserDetails" />
         </div>
     </nav>
 </template>
   
 <script setup>
-import { onMounted, onUnmounted } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
+import RolesDetails from './RolesDetails.vue';
 import { useTableStore } from '../store/TableStore';
 import { useAuthStore } from '../store/AuthStore';
+import { useRoleStore } from '../store/RoleStore';
 import router from '../router';
 
 const authStore = useAuthStore()
 const tableStore = useTableStore()
+const roleStore = useRoleStore()
+
+const showDetails = ref(false)
+const selectedRoleId = ref(null)
+
+const isAdmin = authStore.isUserAdmin()
+const isSuperAdmin = authStore.isSuperAdmin()
 
 function openPersonRegister() {
     router.push({ name: 'login' });
@@ -55,6 +64,15 @@ function openUserRegister() {
     authStore.showUserRegister = true
 }
 
+const showRoleDetails = () => {
+    roleStore.isRoleRegister = true
+    showDetails.value = true;
+};
+
+const closeUserDetails = () => {
+    showDetails.value = false;
+};
+
 const toggleMenu = (menu) => {
     tableStore.toggleMenu(menu);
 };
@@ -64,6 +82,7 @@ const isActiveMenu = (menu) => {
 };
 
 const activateSubMenu = (subMenu) => {
+    roleStore.isRoleRegister = false
     tableStore.setActiveSubMenu(subMenu)
 }
 

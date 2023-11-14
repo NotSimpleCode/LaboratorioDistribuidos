@@ -3,7 +3,8 @@
         <div class="details-content">
             <h2><span v-if="isUserAdmin()">Modificar/</span>Ver Datos de Persona</h2>
             <div class="image-upload">
-                <label for="fileInput" class="image-preview user-photo" @click.prevent="openFileInput" :style="imageStyle">
+                <label for="fileInput" class="image-preview user-photo" @click.prevent="openFileInput"
+                    :style="{ backgroundImage: `url(${imageUrl})` }">
                     <div class=" overlay">
                         <span>Cargar imagen</span>
                     </div>
@@ -47,9 +48,11 @@
                     </div>
                     <div class="person-detail">
                         <label>Estado:</label>
-                        <input type="text" :placeholder="person.estado_usuario" :disabled="!isUserAdmin()"
-                            :style="adminStyle()" v-model="updatedPerson.estado_usuario"
-                            :class="{ 'invalid': !isValidStatus }" @input="validateStatus(updatedPerson.estado_usuario)" />
+                        <select v-model="updatedPerson.estado_usuario" id="status-select" :disabled="!isUserAdmin()"
+                            :style="adminStyle()" @change="validateStatus()">
+                            <option v-for="status in utilityStore.status" :value="status" :key="status">{{ status }}
+                            </option>
+                        </select>
                     </div>
                     <div class="person-detail">
                         <label>Correo Electrónico:</label>
@@ -81,10 +84,9 @@
 </template>
   
 <script setup>
-import { ref, computed, watchEffect, onMounted, onBeforeMount, onUnmounted } from 'vue';
+import { ref, watchEffect, onMounted, onUnmounted } from 'vue';
 import { useUserStore } from '../store/UserStore';
 import { useAuthStore } from '../store/AuthStore';
-import DocTypeService from '../services/DocTypeService';
 import { useUtilityStore } from '../store/UtilityStore'
 
 const userStore = useUserStore();
@@ -93,7 +95,7 @@ const utilityStore = useUtilityStore()
 
 const emits = defineEmits(['close']);
 const selectedImage = ref(null)
-const imageUrl = ref()
+const imageUrl = ref(null)
 const defaultImg = ref('src/assets/user.svg')
 const personLoaded = ref(false);
 const person = ref()
@@ -103,7 +105,7 @@ const formattedDate = ref()
 const isNameValid = ref(true)
 const isLastNameValid = ref(true)
 const isValidCel = ref(true)
-const isValidStatus = ref(true)
+const isValidStatus = ref(false)
 
 const props = defineProps({
     personId: Number,
@@ -124,8 +126,10 @@ const updatedPerson = ref({
 const loadPersonDetails = async () => {
     if (!personLoaded.value) {
         person.value = await userStore.fetchUserById(props.personId);
+        imageUrl.value = person.value.foto_usuario || defaultImg.value
         updatedPerson.value.tipo_documento_usuario = person.value.tipo_documento_usuario
         updatedPerson.value.fecha_nacimiento_usuario = person.value.fecha_nacimiento_usuario
+        updatedPerson.value.estado_usuario = person.value.estado_usuario
         personLoaded.value = true;
     }
 };
@@ -149,15 +153,12 @@ const adminStyle = () => {
 const updateImg = async () => {
     await userStore.updateImg(person.value.documento_usuario, selectedImage.value, authStore.token)
     await userStore.fetchPage()
-    authStore.reloadOnlinePerson()
 }
 
-const imageStyle = computed(() => ({
-    backgroundImage: person.value.foto_usuario ? `url(${person.value.foto_usuario})` : `url(${defaultImg.value})`,
-}));
-
 const closeDetails = () => {
-    authStore.reloadOnlinePerson()
+    if (authStore.onlineUser.personId === props.personId) {
+        location.reload()
+    }
     emits('close');
 };
 
@@ -165,18 +166,18 @@ function openFileInput() {
     document.getElementById('fileInput').click();
 }
 
-async function handleFileUpload(event) {
+function handleFileUpload(event) {
     const file = event.target.files[0];
     if (file) {
         selectedImage.value = file
         imageUrl.value = URL.createObjectURL(file);
     }
-    await updateImg(imageUrl);
+    updateImg(imageUrl);
 }
 
 function isUserAdmin() {
     const isOnlineUser = authStore.onlineUser.personId === props.personId
-    return authStore.isUserAdmin() || isOnlineUser
+    return authStore.isUserAdmin() || isOnlineUser || authStore.isSuperAdmin()
 }
 
 //validar que los campos cambiados sean validos
@@ -212,12 +213,8 @@ const validateLastName = (lastname) => {
 const validateCellphone = (cell) => {
     isValidCel.value = utilityStore.validateNumberField(cell)
 }
-const validateStatus = (status) => {
-    isValidStatus.value = utilityStore.validateStatus(status)
-}
-
-const fetchDocTypes = async () => {
-    utilityStore.docTypes = await DocTypeService.fetchAllDocs()
+const validateStatus = () => {
+    isValidStatus.value = updatedPerson.value.estado_usuario !== person.value.estado_usuario
 }
 
 function handleDocumentClick(event) {
@@ -237,15 +234,12 @@ watchEffect(() => {
         closeDetails();
     }
     updateFormattedDate()
+    console.log(updatedPerson.value.tipo_documento_usuario)
 
 });
 
 onMounted(() => {
     loadPersonDetails()
-})
-
-onBeforeMount(() => {
-    utilityStore.fetchDocTypes()
 })
 
 onUnmounted(() => {
@@ -371,6 +365,7 @@ h2 {
 .overlay span {
     cursor: pointer;
     user-select: none;
+
 }
 
 .image-preview {

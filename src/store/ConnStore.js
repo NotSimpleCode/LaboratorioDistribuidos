@@ -34,7 +34,7 @@ export const useConnectionStore = defineStore('conn', {
             this.connections = await ConnectionService.fetchPage(this.currentPage, this.getToken());
         },
         async fetchByUserId(userId) {
-            return await ConnectionService.fetchByUserId(userId)
+            return await ConnectionService.fetchByUserId(userId,this.getToken())
         },
         async fetchByUserNickname(nickname) {
             return await ConnectionService.fetchByUserNickname(nickname)
@@ -42,6 +42,13 @@ export const useConnectionStore = defineStore('conn', {
         async fetchTotalConnections() {
             this.totalConn = await ConnectionService.fetchCount(this.getToken())
         },
+        async putUserByNickName(userNickname, newValue) {
+            return await ConnectionService.putByUserNickname(userNickname, newValue, this.getToken())
+        },
+        async deleteConnection(userId, idRol) {
+            return await ConnectionService.deleteConnection(userId, idRol, this.getToken())
+        }
+        ,
         calculateTotalPages() {
             this.totalPages = Math.ceil(this.totalConn / this.connPerPage);
         }
