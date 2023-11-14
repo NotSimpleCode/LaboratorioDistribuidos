@@ -255,7 +255,7 @@ router.post('/login', async (req, res) => {
                 res.status(401).json({ status: false, error: "Incorrect user" });
             }
         } else {
-            res.status(403).json({ error: "Username Disabled - Please contact with admin" ,estado:logueo.estado_cuenta});
+            res.status(403).json({ estado:logueo.estado_cuenta});
         }
     } catch (error) {
         console.error("Error en el bloque catch:", error);
