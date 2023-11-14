@@ -235,6 +235,8 @@ router.post('/login', async (req, res) => {
         });
         if (logueo === null) {
             res.status(404).json({ error: "Username not found" });
+        } else if(logueo.estado_cuenta != "A"){
+            res.status(403).json({ error: "Username Disabled" });
         } else {
             if (nombre_usuario === logueo.nick_usuario) {//Validar mayusculas y minusculas
                 // Compara el hash de la contraseña ingresada con el hash almacenado
