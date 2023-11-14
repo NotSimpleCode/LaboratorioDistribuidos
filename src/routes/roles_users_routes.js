@@ -255,7 +255,8 @@ router.post('/login', async (req, res) => {
                 res.status(401).json({ status: false, error: "Incorrect user" });
             }
         } else {
-            res.status(403).json({ estado:logueo.estado_cuenta});
+            console.log(logueo.estado_cuenta)
+            res.status(403).json({ estado:logueo});
         }
     } catch (error) {
         console.error("Error en el bloque catch:", error);
