@@ -236,7 +236,7 @@ router.post('/login', async (req, res) => {
 
         if (logueo === null) {
             res.status(404).json({ error: "Username not found" });
-        } else if(logueo.estado_cuenta === "A"){
+        } else if(logueo.estado_cuenta === 'A'){
             if (nombre_usuario === logueo.nick_usuario) {//Validar mayusculas y minusculas
                 // Compara el hash de la contraseña ingresada con el hash almacenado
                 const passwordMatch = await bcrypt.compare(password_usuario, logueo.password_usuario);
@@ -255,7 +255,7 @@ router.post('/login', async (req, res) => {
                 res.status(401).json({ status: false, error: "Incorrect user" });
             }
         } else {
-            res.status(403).json({ error: "Username Disabled - Please contact with admin" });
+            res.status(403).json({ error: "Username Disabled - Please contact with admin" ,estado:logueo.estado_cuenta});
         }
     } catch (error) {
         console.error("Error en el bloque catch:", error);
