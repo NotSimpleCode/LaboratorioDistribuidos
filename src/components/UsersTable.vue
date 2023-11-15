@@ -181,7 +181,7 @@ async function getUser(userId) {
 }
 
 const getUserImageStyle = (foto_usuario) => {
-    const defaultImageUrl = '/src/assets/user.svg'
+    const defaultImageUrl = 'https://cdn.pixabay.com/photo/2017/07/18/23/23/user-2517433_1280.png'
     const backgroundImage = foto_usuario ? `url(${foto_usuario})` : `url(${defaultImageUrl})`;
 
     return { 'background-image': backgroundImage };

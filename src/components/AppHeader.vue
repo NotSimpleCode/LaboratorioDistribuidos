@@ -32,9 +32,7 @@ import UserDetails from './UserDetails.vue'
 
 const isMenuVisible = ref(false)
 const authStore = useAuthStore()
-let isFocused = ref(false)
-let searchIcon = ref('../src/assets/search-white.svg')
-const actualImg = computed(() => authStore.onlineUser.foto ? authStore.onlineUser.foto : '../src/assets/user.svg')
+const actualImg = computed(() => authStore.onlineUser.foto ? authStore.onlineUser.foto : 'https://cdn.pixabay.com/photo/2017/07/18/23/23/user-2517433_1280.png')
 
 const showDetails = ref(false);
 const selectedUserId = ref(null);
