@@ -115,10 +115,6 @@ const isDescriptionValid = ref(true)
 const isValidStatus = ref(true)
 const isValidNumber = ref(true)
 
-const isAdmin = () => {
-    return authStore.isUserAdmin()
-}
-
 const isSuperAdmin = () => {
     return authStore.isSuperAdmin()
 }
@@ -157,11 +153,10 @@ const updateRole = async () => {
     const data = {
         nombre_rol: updatedRole.value.nombre_rol,
         estado_rol: updatedRole.value.estado_rol,
-        descripcion_rol: updatedRole.value.descripcion_rol
+        descripcion_rol: updatedRole.value.descripcion_rol,
     }
     console.log(data);
     const response = await roleStore.updateRole(props.roleId, data)
-    console.log(response.message)
     closeDetails()
     await roleStore.fetchRoles()
 }
@@ -226,7 +221,6 @@ watchEffect(() => {
 onMounted(() => {
     if (roleStore.isRoleRegister) {
         roleLoaded.value = true
-        console.log(updatedRole.value);
     } else {
         loadRoleDetails()
     }

@@ -38,7 +38,7 @@ class RoleService extends RolesCrudService {
 
     async patchRole(roleId, data, token) {
         try {
-            const response = await axios.patch(this.url + `/${roleId}`, data,
+            const response = await axios.put(this.url + `/${roleId}`, data,
                 {
                     headers: {
                         'Authorization': `${token}`

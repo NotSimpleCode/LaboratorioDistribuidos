@@ -21,8 +21,7 @@
             <div v-for="role in filteredRoles" :key="role.id_rol" class="role-row row">
                 <!-- Filas de datos -->
                 <div class="role-cell">{{ role.id_usuario }}</div>
-                <i v-if="authStore.isSuperAdmin()" @click.stop="deleteConnection(role.id_usuario, role.id_rol)"
-                    class="bi bi-person-x"></i>
+                <i v-if="authStore.isSuperAdmin()" @click.stop="showMessage(role)" class="bi bi-person-x"></i>
 
                 <div v-if="!role.isEditingNick" class="role-cell">
                     {{ role.nick_usuario }}
@@ -46,6 +45,8 @@
                     {{ role.roles.descripcion_rol || noDataValue }}
                 </div>
             </div>
+            <Message v-if="messageStore.showMessage"
+                @accept="deleteConnection(selectedIdUserToDelete, selectedIdRoleToDelete)" />
             <div class="pagination">
                 <!-- <label>{{ getActualRange() }}</label> -->
                 <div>
@@ -72,13 +73,18 @@ import { ref, computed, onBeforeMount } from 'vue';
 import { useConnectionStore } from '../store/ConnStore';
 import { useUtilityStore } from '../store/UtilityStore';
 import { useAuthStore } from '../store/AuthStore';
+import { useMessageStore } from '../store/MessageStore';
+import Message from './MessageWindow.vue';
 
 const connectionStore = useConnectionStore()
 const utilityStore = useUtilityStore()
 const authStore = useAuthStore()
+const messageStore = useMessageStore()
 
-const noDataValue = 'Vacío';
+const noDataValue = '0';
 const searchTerm = ref("")
+const selectedIdRoleToDelete = ref(null)
+const selectedIdUserToDelete = ref(null)
 
 const actualNick = ref(null)
 const updatedNick = ref(null)
@@ -154,9 +160,7 @@ function startEditing(role) {
 const updateNick = async (role) => {
     const exist = await userExist(updatedNick.value)
     if (!exist) {
-        console.log(updatedNick.value)
         const response = await connectionStore.putUserByNickName(actualNick.value, updatedNick.value)
-        console.log(response)
         connectionStore.fetchPage()
     } else {
         alert("Este nombre de usuario ya existe")
@@ -167,15 +171,25 @@ function cancelEditing(role) {
     role.isEditingNick = false;
 }
 async function updateStatus(role) {
-    console.log(role.estado_cuenta);
-    console.log(role.nick_usuario);
     const response = await connectionStore.putUserByNickName(role.nick_usuario, role.estado_cuenta)
-    console.log(response);
 }
+
+function showMessage(rol) {
+    messageStore.showingMessage()
+    messageStore.setMessageType('confirm')
+    messageStore.setMessageTittle("Eliminar usuario")
+    messageStore.setMessageContent(`Eliminar al ${rol.roles.nombre_rol} ${rol.nick_usuario}`)
+    selectedIdUserToDelete.value = rol.id_usuario
+    selectedIdRoleToDelete.value = rol.id_rol
+}
+
 
 async function deleteConnection(id_usuario, id_rol) {
     const response = await connectionStore.deleteConnection(id_usuario, id_rol)
-    console.log(response)
+    messageStore.showingMessage()
+    messageStore.setMessageType('success')
+    messageStore.setMessageContent(`Usuario eliminado correctamente`)
+    fetchData()
 }
 
 const userExist = async (userNickname) => {

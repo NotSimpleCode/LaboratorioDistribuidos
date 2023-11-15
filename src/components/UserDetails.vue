@@ -111,7 +111,6 @@ const props = defineProps({
     show: Boolean,
 });
 
-
 const updatedPerson = ref({
     tipo_documento_usuario: null,
     nombre_usuario: null,
@@ -233,7 +232,6 @@ watchEffect(() => {
         closeDetails();
     }
     updateFormattedDate()
-    console.log(updatedPerson.value.tipo_documento_usuario)
 
 });
 

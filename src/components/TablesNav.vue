@@ -47,7 +47,6 @@ const tableStore = useTableStore()
 const roleStore = useRoleStore()
 
 const showDetails = ref(false)
-const selectedRoleId = ref(null)
 
 const isAdmin = authStore.isUserAdmin()
 const isSuperAdmin = authStore.isSuperAdmin()

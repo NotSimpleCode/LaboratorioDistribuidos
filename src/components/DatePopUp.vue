@@ -28,8 +28,6 @@ const showDatePopup = () => {
 
 const submitDate = async () => {
     const response = await userStore.fetchUsersByDate(selectedDate.value.toString())
-    console.log(response);
-    // console.log(selectedDate.value.toString())
     closePopup()
     alert("Reporte enviado")
 }

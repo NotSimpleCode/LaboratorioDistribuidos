@@ -149,17 +149,17 @@ class UserService extends UserCrudService {
                 }
             });
 
-            if (response.status === 200) {
+            return response.data;
+        } catch (error) {
+            if (error.response.status === 200) {
                 alert("Usuario eliminado exitosamente!!");
-                return response.data;
-            } else if (response.status === 404) {
+            } else if (error.response.status === 404) {
                 return { error: "User not found" };
+            } else if (error.response.status == 500) {
+                return error.response.status
             } else {
                 return { error: "Internal server error" };
             }
-        } catch (error) {
-            console.error(`Error al eliminar ${this.entity}.`, error.message);
-            return { error: "Error during deletion" };
         }
     }
 

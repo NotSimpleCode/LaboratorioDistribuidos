@@ -31,8 +31,8 @@ export const useAuthStore = defineStore('auth', {
 
         async login() {
             try {
+
                 const response = await LoginService.login({ nombre_usuario: this.onlineUser.nick, password_usuario: this.password });
-                console.log(response)
                 if (response) {
                     await this.updateOnlinePerson(this.onlineUser.nick, response.token)
                     router.push({ name: 'information' });

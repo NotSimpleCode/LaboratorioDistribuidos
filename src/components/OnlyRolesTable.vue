@@ -45,7 +45,7 @@ import { useRoleStore } from '../store/RoleStore';
 import RolesDetails from './RolesDetails.vue';
 
 const roleStore = useRoleStore()
-const noDataValue = 'Vacío';
+const noDataValue = '0';
 const searchTerm = ref("")
 const showDetails = ref(false);
 const selectedRoleId = ref(null);

@@ -32,9 +32,8 @@
                 <div class="user-cell">Correo</div>
             </div>
             <div v-for="user in filteredUsers" :key="user">
-                <div class="user-row row" @click="showUserDetails(user.documento_usuario)">
-                    <i v-if="authStore.isSuperAdmin()" @click.stop="deletePerson(user.documento_usuario)"
-                        class="bi bi-person-x"></i>
+                <div class="user-row row" @click.stop="showUserDetails(user.documento_usuario)">
+                    <i v-if="authStore.isSuperAdmin()" @click.stop="showMessage(user)" class="bi bi-person-x"></i>
                     <div class="user-cell user-photo" :style="getUserImageStyle(user.foto_usuario)">
                     </div>
                     <div :class="{ 'user-cell': true, 'user-cell-empty': !user.documento_usuario }">{{
@@ -42,8 +41,7 @@
                         noDataValue }}</div>
                     <div :class="{ 'user-cell': true, 'user-cell-empty': !user.nombre_usuario }"
                         :title="user.nombre_usuario">{{
-                            user.nombre_usuario ||
-                            noDataValue
+                            user.nombre_usuario || noDataValue
                         }}
                     </div>
                     <div :class="{ 'user-cell': true, 'user-cell-empty': !user.apellido_usuario }"
@@ -54,7 +52,6 @@
                     <div :class="{ 'user-cell': true, 'user-cell-empty': !user.celular_usuario }"
                         :title="user.celular_usuario">
                         {{
-                            user.celular_usuario ||
                             noDataValue
                         }}</div>
                     <div :class="{ 'user-cell': true, 'user-cell-empty': !user.fecha_registro_usuario }"
@@ -70,6 +67,7 @@
                             noDataValue }}</div>
                 </div>
             </div>
+            <Message v-if="messageStore.showMessage" @accept="deletePerson(selectedUserToDelete)" />
             <UserDetails v-if="showDetails" :person-id="selectedUserId" :show="showDetails" @close="closeUserDetails" />
         </div>
         <div class="pagination">
@@ -101,14 +99,18 @@ import { useUserStore } from '../store/UserStore';
 import { useUtilityStore } from '../store/UtilityStore';
 import { useAuthStore } from '../store/AuthStore';
 import { useConnectionStore } from '../store/ConnStore'
+import { useMessageStore } from '../store/MessageStore'
 import UserDetails from './UserDetails.vue'
 import PopUp from './DatePopUp.vue'
+import Message from './MessageWindow.vue'
 
 const userStore = useUserStore()
 const utilityStore = useUtilityStore()
 const authStore = useAuthStore()
 const connectionStore = useConnectionStore()
+const messageStore = useMessageStore()
 
+const selectedUserToDelete = ref(null)
 const noDataValue = 'Vacío';
 const searchTerm = ref("")
 const showDetails = ref(false);
@@ -149,15 +151,24 @@ const filterUsers = async () => {
     } else {
         userStore.filterUsers(term);
     }
-};
+}
+
+function showMessage(user) {
+    messageStore.showingMessage()
+    messageStore.setMessageType('confirm')
+    messageStore.setMessageTittle("Eliminar usuario")
+    messageStore.setMessageContent(`Eliminar a ${user.nombre_usuario} con N° Doc: ${user.documento_usuario}`)
+    selectedUserToDelete.value = user.documento_usuario
+}
 
 async function deletePerson(id_usuario) {
     const response = await userStore.deleteUser(id_usuario)
-    if (response.error) {
+    if (response === 500) {
         const user = await getUser(id_usuario)
-        alert(`Debe eliminar al usuario ${user.nick_usuario} antes de eliminar a esta persona`)
+        messageStore.showingMessage()
+        messageStore.setMessageType('success')
+        messageStore.setMessageContent(`Estos datos pertenecen a el usuario ${user.nick_usuario}. Elimine el usuario primero`)
     }
-
     userStore.fetchPage()
 }
 
