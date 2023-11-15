@@ -63,6 +63,8 @@ onUnmounted(() => {
 }
 
 .message-header {
+    border-top-right-radius: 10px;
+    border-top-left-radius: 10px;
     grid-row: 1;
     grid-column: span 2;
     text-align: center;

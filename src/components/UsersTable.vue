@@ -107,9 +107,7 @@ import { useMessageStore } from '../store/MessageStore'
 import UserDetails from './UserDetails.vue'
 import PopUp from './DatePopUp.vue'
 import Message from './MessageWindow.vue'
-import defaultImageUrl from '@/assets/user.svg';
-import searchWhite from '@/assets/search-white.svg'
-import search from '@/assets/seach.svg'
+import defaultImageUrl from '/src/assets/user.svg';
 
 const userStore = useUserStore()
 const utilityStore = useUtilityStore()
@@ -174,7 +172,7 @@ async function deletePerson(id_usuario) {
         const user = await getUser(id_usuario)
         messageStore.showingMessage()
         messageStore.setMessageType('success')
-        messageStore.setMessageContent(`Estos datos pertenecen a el usuario ${user.nick_usuario}. Elimine el usuario primero`)
+        messageStore.setMessageContent(`Estos datos pertenecen a el usuario ${user.nick_usuario}. Debe eliminar el usuario primero`)
     }
     userStore.fetchPage()
 }
@@ -190,16 +188,13 @@ const getUserImageStyle = (foto_usuario) => {
 };
 
 let isFocused = ref(false)
-let searchIcon = ref(searchWhite)
 
 const onSearchFocus = () => {
     isFocused.value = true;
-    searchIcon.value = search;
 }
 
 const onSearchBlur = () => {
     isFocused.value = false;
-    searchIcon.value = searchWhite;
 }
 
 
