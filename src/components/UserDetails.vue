@@ -49,7 +49,7 @@
                     <div class="person-detail">
                         <label>Estado:</label>
                         <select v-model="updatedPerson.estado_usuario" id="status-select" :disabled="!isUserAdmin()"
-                            :style="adminStyle()" @change="validateStatus()">
+                            :style="adminStyle()">
                             <option v-for="status in utilityStore.status" :value="status" :key="status">{{ status }}
                             </option>
                         </select>
@@ -105,7 +105,6 @@ const formattedDate = ref()
 const isNameValid = ref(true)
 const isLastNameValid = ref(true)
 const isValidCel = ref(true)
-const isValidStatus = ref(false)
 
 const props = defineProps({
     personId: Number,
@@ -182,7 +181,7 @@ function isUserAdmin() {
 
 //validar que los campos cambiados sean validos
 function isDataValid() {
-    return (isUserModified() && isNameValid.value && isLastNameValid.value && isValidCel.value && isValidStatus.value)
+    return (isUserModified() && isNameValid.value && isLastNameValid.value && isValidCel.value)
 }
 
 //Validar que hayan cambios en los campos
@@ -193,9 +192,12 @@ function isUserModified() {
     if (updatedPerson.value.fecha_nacimiento_usuario !== person.value.fecha_nacimiento_usuario) {
         return true;
     }
+    if (updatedPerson.value.estado_usuario !== person.value.estado_usuario) {
+        return true;
+    }
 
     for (var key in updatedPerson.value) {
-        if ((key !== 'tipo_documento_usuario') && (key !== 'fecha_nacimiento_usuario') && (updatedPerson.value[key] !== null && updatedPerson.value[key] !== "")) {
+        if ((key !== 'tipo_documento_usuario') && (key !== 'fecha_nacimiento_usuario') && (key !== 'estado_usuario') && (updatedPerson.value[key] !== null && updatedPerson.value[key] !== "")) {
             return true;
         }
     }
@@ -212,9 +214,6 @@ const validateLastName = (lastname) => {
 
 const validateCellphone = (cell) => {
     isValidCel.value = utilityStore.validateNumberField(cell)
-}
-const validateStatus = () => {
-    isValidStatus.value = updatedPerson.value.estado_usuario !== person.value.estado_usuario
 }
 
 function handleDocumentClick(event) {

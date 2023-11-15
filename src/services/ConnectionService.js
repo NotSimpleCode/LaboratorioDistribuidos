@@ -136,7 +136,7 @@ class ConnectionService extends ConnectionsCrudService {
 
     async putByUserNickname(userNickname, newValue, token) {
         try {
-            const response = await axios.put(this.url + `/${userNickname}`, newValue,
+            const response = await axios.put(this.url + `/${userNickname}`, { estado_cuenta: newValue },
                 {
                     headers: {
                         'Authorization': `${token}`

@@ -33,7 +33,8 @@
             </div>
             <div v-for="user in filteredUsers" :key="user">
                 <div class="user-row row" @click="showUserDetails(user.documento_usuario)">
-                    <i @click.stop="deletePerson(user.documento_usuario)" class="bi bi-person-x"></i>
+                    <i v-if="authStore.isSuperAdmin()" @click.stop="deletePerson(user.documento_usuario)"
+                        class="bi bi-person-x"></i>
                     <div class="user-cell user-photo" :style="getUserImageStyle(user.foto_usuario)">
                     </div>
                     <div :class="{ 'user-cell': true, 'user-cell-empty': !user.documento_usuario }">{{

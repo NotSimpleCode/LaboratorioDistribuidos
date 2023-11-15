@@ -32,12 +32,13 @@ export const useAuthStore = defineStore('auth', {
         async login() {
             try {
                 const response = await LoginService.login({ nombre_usuario: this.onlineUser.nick, password_usuario: this.password });
-                if (response.status) {
+                console.log(response)
+                if (response) {
                     await this.updateOnlinePerson(this.onlineUser.nick, response.token)
                     router.push({ name: 'information' });
                 }
             } catch (error) {
-                alert('Credenciales incorrectas. Por favor, inténtalo de nuevo.');
+                console.error("Error", error);
             }
         },
 

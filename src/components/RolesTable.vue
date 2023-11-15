@@ -21,14 +21,14 @@
             <div v-for="role in filteredRoles" :key="role.id_rol" class="role-row row">
                 <!-- Filas de datos -->
                 <div class="role-cell">{{ role.id_usuario }}</div>
-                <i @click.stop="deleteConnection(role.id_usuario, role.id_rol)" class="bi bi-person-x"></i>
+                <i v-if="authStore.isSuperAdmin()" @click.stop="deleteConnection(role.id_usuario, role.id_rol)"
+                    class="bi bi-person-x"></i>
 
                 <div v-if="!role.isEditingNick" class="role-cell">
                     {{ role.nick_usuario }}
                     <i v-if="!role.isEditingNick" class="bi bi-pencil-square" id="updateNick-btn"
                         @click="startEditing(role)"></i>
                 </div>
-
                 <div v-else>
                     <input type="text" class="role-cell" v-model="updatedNick" id="nick-input" @input="validateNick()">
                     <i v-if="isValidNick" class="bi bi-check-circle-fill" @click="updateNick(role)"></i>
@@ -37,7 +37,7 @@
 
                 <div class="role-cell">{{ role.roles.nombre_rol }}</div>
 
-                <select v-model="role.roles.estado_rol" class='role-cell status-select' @change="updateStatus(role)">
+                <select v-model="role.estado_cuenta" class='role-cell status-select' @change="updateStatus(role)">
                     <option v-for="status in utilityStore.status" :value="status" :key="status">{{ status }}
                     </option>
                 </select>
@@ -88,7 +88,6 @@ const currentPage = computed(() => connectionStore.currentPage);
 const totalPages = computed(() => connectionStore.totalPages);
 
 const filteredRoles = computed(() => {
-
     if (searchTerm.value.trim() === '') {
         return connectionStore.connections;
     } else {
@@ -168,9 +167,9 @@ function cancelEditing(role) {
     role.isEditingNick = false;
 }
 async function updateStatus(role) {
-    console.log(role.roles.estado_rol);
+    console.log(role.estado_cuenta);
     console.log(role.nick_usuario);
-    const response = await connectionStore.putUserByNickName(role.nick_usuario, role.roles.estado_rol)
+    const response = await connectionStore.putUserByNickName(role.nick_usuario, role.estado_cuenta)
     console.log(response);
 }
 

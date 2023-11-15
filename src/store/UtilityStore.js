@@ -80,7 +80,6 @@ export const useUtilityStore = defineStore('utility', {
         async fetchDocTypes() {
             const docs = await DocTypeService.fetchAllDocs();
             this.docTypes = docs;
-            console.log(docs)
         },
         async fetchRoles() {
             const roles = await RoleService.fetchAll()
