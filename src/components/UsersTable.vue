@@ -1,9 +1,14 @@
 <template>
     <section class="search-container">
         <h1 class="table-title">Personas</h1>
-        <div class="search-bar">
+        <!-- <div class="search-bar">
             <input class="search" type="text" placeholder="Buscar..." v-model="searchTerm" @input="filterUsers" />
             <input id="tableSearch" class="search-button" type="button" value="">
+        </div> -->
+        <div class="search-bar">
+            <input class="search" type="text" placeholder="Buscar..." @focus="onSearchFocus" @blur="onSearchBlur"
+                v-model="searchTerm" @input="filterUsers" />
+            <input class="search_btn" type="button" @click="buscar">
         </div>
         <div class="options">
         </div>
@@ -50,8 +55,7 @@
                             noDataValue
                         }}</div>
                     <div :class="{ 'user-cell': true, 'user-cell-empty': !user.celular_usuario }"
-                        :title="user.celular_usuario">
-                        {{
+                        :title="user.celular_usuario"> {{ user.celular_usuario ||
                             noDataValue
                         }}</div>
                     <div :class="{ 'user-cell': true, 'user-cell-empty': !user.fecha_registro_usuario }"
@@ -104,6 +108,8 @@ import UserDetails from './UserDetails.vue'
 import PopUp from './DatePopUp.vue'
 import Message from './MessageWindow.vue'
 import defaultImageUrl from '@/assets/user.svg';
+import searchWhite from '@/assets/search-white.svg'
+import search from '@/assets/seach.svg'
 
 const userStore = useUserStore()
 const utilityStore = useUtilityStore()
@@ -182,6 +188,20 @@ const getUserImageStyle = (foto_usuario) => {
 
     return { 'background-image': backgroundImage };
 };
+
+let isFocused = ref(false)
+let searchIcon = ref(searchWhite)
+
+const onSearchFocus = () => {
+    isFocused.value = true;
+    searchIcon.value = search;
+}
+
+const onSearchBlur = () => {
+    isFocused.value = false;
+    searchIcon.value = searchWhite;
+}
+
 
 function isUserAdmin() {
     return authStore.isUserAdmin() || authStore.isSuperAdmin()
@@ -277,7 +297,7 @@ onBeforeMount(() => {
     grid-template-rows: 1fr 2fr;
     background-color: var(--primary-color);
     margin: 10px;
-    min-height: 14vh;
+    min-height: 15vh;
     padding-left: 20px;
     padding-top: 10px;
     border-radius: 5px;
@@ -290,49 +310,6 @@ onBeforeMount(() => {
     font-size: 1.5rem;
 }
 
-.search-bar {
-    grid-row: 2/3;
-    grid-column: 1/2;
-    max-width: 250px;
-    position: relative;
-    height: 30px;
-    align-self: center;
-}
-
-.search {
-    border-style: none;
-    color: var(--secondary-color);
-    box-shadow: 0px 0px 5px rgba(34, 34, 59, 0.4);
-    height: 30px;
-    max-width: 100%;
-    padding-left: 17px;
-    padding-right: 50px;
-    border-radius: 15px;
-
-}
-
-.search::placeholder {
-    color: rgb(175, 175, 175);
-    font-style: italic;
-}
-
-.search:focus {
-    outline: none;
-}
-
-.search-button {
-    border-style: none;
-    position: absolute;
-    cursor: pointer;
-    background-image: url('../assets/search.svg');
-    background-size: cover;
-    width: 25px;
-    height: 25px;
-    top: 2px;
-    right: 0;
-    background-color: transparent;
-
-}
 
 .options {
     grid-row: 2/3;
@@ -418,7 +395,6 @@ onBeforeMount(() => {
     border-radius: 100%;
     background-size: cover;
     background-repeat: no-repeat;
-    background-image: url('../assets/user.svg');
     background-position: center;
 }
 
@@ -522,5 +498,41 @@ onBeforeMount(() => {
 .current-page {
     background-color: rgba(0, 123, 255, 0.7);
     color: var(--primary-color);
+}
+
+.search-bar {
+    position: relative;
+}
+
+.search {
+    font-size: 0.95rem;
+    width: 180px;
+    height: 30px;
+    border-style: none;
+    background-color: var(--secondary-color);
+    padding-left: 15px;
+    padding-right: 45px;
+    margin-top: 10px;
+    color: var(--white-color);
+    overflow: hidden;
+    border-radius: 20px;
+    box-shadow: 0px 0px 5px rgba(34, 34, 59, 0.2);
+}
+
+input[type="text"]:focus {
+    border: 1px solid lightgray;
+    outline: none;
+    background-color: var(--white-color);
+    color: var(--secondary-color);
+}
+
+.search::placeholder {
+    color: var(--white-color);
+    transition: color 0.5s ease-in-out;
+    font-style: italic;
+}
+
+input[type="text"]:focus::placeholder {
+    color: #848181;
 }
 </style>

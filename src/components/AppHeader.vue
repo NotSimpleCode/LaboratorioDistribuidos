@@ -5,10 +5,6 @@
         </div>
 
         <div class="right-content">
-            <div class="search-bar">
-                <input class="search" type="text" placeholder="Buscar..." @focus="onSearchFocus" @blur="onSearchBlur" />
-                <input class="search_btn" :style="{ backgroundImage: `url(${searchIcon})` }" type="button" @click="buscar">
-            </div>
 
             <div class="user-info" @click="toggleMenu">
                 <img class="user-avatar" :src="actualImg" alt="imagen de perfil" />
@@ -43,19 +39,16 @@ const actualImg = computed(() => authStore.onlineUser.foto ? authStore.onlineUse
 const showDetails = ref(false);
 const selectedUserId = ref(null);
 
-const onSearchFocus = () => {
-    isFocused.value = true;
-    searchIcon.value = '../src/assets/search.svg';
-}
+// const onSearchFocus = () => {
+//     isFocused.value = true;
+//     searchIcon.value = '../src/assets/search.svg';
+// }
 
-const onSearchBlur = () => {
-    isFocused.value = false;
-    searchIcon.value = '../src/assets/search-white.svg';
-}
+// const onSearchBlur = () => {
+//     isFocused.value = false;
+//     searchIcon.value = '../src/assets/search-white.svg';
+// }
 
-const buscar = () => {
-
-}
 
 const toggleMenu = () => {
     isMenuVisible.value = !isMenuVisible.value;
@@ -99,56 +92,8 @@ const logout = () => {
     position: absolute;
     align-items: center;
     justify-content: space-between;
-    right: 20px;
+    right: 40px;
     max-width: 50%;
-}
-
-.search-bar {
-    position: relative;
-}
-
-.search {
-    font-size: 0.95rem;
-    width: 200px;
-    height: 40px;
-    border-style: none;
-    background-color: var(--secondary-color);
-    padding-left: 15px;
-    padding-right: 45px;
-    color: var(--white-color);
-    overflow: hidden;
-    border-radius: 5px;
-    box-shadow: 0px 0px 5px rgba(34, 34, 59, 0.2);
-}
-
-input[type="text"]:focus {
-    border: 1px solid lightgray;
-    outline: none;
-    background-color: var(--white-color);
-    color: var(--secondary-color);
-}
-
-.search::placeholder {
-    color: var(--white-color);
-    transition: color 0.5s ease-in-out;
-    font-style: italic;
-}
-
-input[type="text"]:focus::placeholder {
-    color: #848181;
-}
-
-.search_btn {
-    background-size: contain;
-    background-repeat: no-repeat;
-    position: absolute;
-    top: 20%;
-    right: 3%;
-    background-color: transparent;
-    border-style: none;
-    cursor: pointer;
-    width: 25px;
-    height: 25px;
 }
 
 .user-info {
@@ -157,7 +102,7 @@ input[type="text"]:focus::placeholder {
     cursor: pointer;
     margin: 20px;
     padding: 10px;
-    max-width: 50%;
+    max-width: 100%;
 }
 
 .user-info:hover {
@@ -186,7 +131,7 @@ input[type="text"]:focus::placeholder {
 .user-menu {
     position: absolute;
     top: 80%;
-    right: 4%;
+    right: 20%;
     display: none;
     background-color: #fff;
     border: 1px solid #ddd;
