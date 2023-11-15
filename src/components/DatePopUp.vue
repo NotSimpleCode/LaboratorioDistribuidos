@@ -8,6 +8,7 @@
                 <button id="submit-date-btn" @click="submitDate">Enviar</button>
                 <button id="close-btn" @click="closePopup">Cerrar</button>
             </div>
+            <Message v-if="messageStore.showMessage" />
         </div>
     </div>
 </template>
@@ -15,9 +16,12 @@
 <script setup>
 
 import { ref } from 'vue';
+import { useMessageStore } from '../store/MessageStore';
 import { useUserStore } from '../store/UserStore'
+import Message from './MessageWindow.vue';
 
 const userStore = useUserStore()
+const messageStore = useMessageStore()
 
 const selectedDate = ref('');
 const isDatePopupVisible = ref(false);
@@ -29,7 +33,11 @@ const showDatePopup = () => {
 const submitDate = async () => {
     const response = await userStore.fetchUsersByDate(selectedDate.value.toString())
     closePopup()
-    alert("Reporte enviado")
+    messageStore.showingMessage()
+    messageStore.setMessageType('success')
+    messageStore.setMessageTittle("Envio de Reporte")
+    messageStore.setMessageContent('El reporte de usuarios por fecha se envio correctamente')
+
 }
 
 const closePopup = () => {

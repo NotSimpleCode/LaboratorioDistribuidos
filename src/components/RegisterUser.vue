@@ -63,6 +63,7 @@ import { useUtilityStore } from '../store/UtilityStore';
 import { useUserStore } from '../store/UserStore';
 import { useRoleStore } from '../store/RoleStore'
 import router from '../router';
+import defaultImg from '@/assets/user.svg';
 
 const authStore = useAuthStore()
 const utilityStore = useUtilityStore()
@@ -70,7 +71,7 @@ const userStore = useUserStore()
 const roleStore = useRoleStore()
 
 const isDataFill = ref(false)
-const imageUrl = ref('../src/assets/user.svg')
+const imageUrl = ref(defaultImg)
 const selectedImage = ref(null)
 const isPasswordVisible = ref(false)
 const newUser = ref({})

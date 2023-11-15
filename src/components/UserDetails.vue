@@ -88,6 +88,7 @@ import { ref, watchEffect, onMounted, onUnmounted } from 'vue';
 import { useUserStore } from '../store/UserStore';
 import { useAuthStore } from '../store/AuthStore';
 import { useUtilityStore } from '../store/UtilityStore'
+import defaultImg from '@/assets/user.svg';
 
 const userStore = useUserStore();
 const authStore = useAuthStore();
@@ -96,7 +97,7 @@ const utilityStore = useUtilityStore()
 const emits = defineEmits(['close']);
 const selectedImage = ref(null)
 const imageUrl = ref(null)
-const defaultImg = ref('src/assets/user.svg')
+const defaultImageUrl = ref(defaultImg)
 const personLoaded = ref(false);
 const person = ref()
 const isEditingDate = ref(false)
@@ -124,7 +125,7 @@ const updatedPerson = ref({
 const loadPersonDetails = async () => {
     if (!personLoaded.value) {
         person.value = await userStore.fetchUserById(props.personId);
-        imageUrl.value = person.value.foto_usuario || defaultImg.value
+        imageUrl.value = person.value.foto_usuario || defaultImageUrl.value
         updatedPerson.value.tipo_documento_usuario = person.value.tipo_documento_usuario
         updatedPerson.value.fecha_nacimiento_usuario = person.value.fecha_nacimiento_usuario
         updatedPerson.value.estado_usuario = person.value.estado_usuario
