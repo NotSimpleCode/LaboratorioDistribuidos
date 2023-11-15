@@ -107,7 +107,6 @@ import { useMessageStore } from '../store/MessageStore'
 import UserDetails from './UserDetails.vue'
 import PopUp from './DatePopUp.vue'
 import Message from './MessageWindow.vue'
-import defaultImageUrl from '/src/assets/user.svg';
 
 const userStore = useUserStore()
 const utilityStore = useUtilityStore()
@@ -182,6 +181,7 @@ async function getUser(userId) {
 }
 
 const getUserImageStyle = (foto_usuario) => {
+    const defaultImageUrl = '/src/assets/user.svg'
     const backgroundImage = foto_usuario ? `url(${foto_usuario})` : `url(${defaultImageUrl})`;
 
     return { 'background-image': backgroundImage };
