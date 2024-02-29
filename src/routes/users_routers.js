@@ -65,7 +65,7 @@ router.post('/upload/:documento_usuario', uploadStrategy, async (req, res) => {
 const elementosPorPagin = 20; // Cambia esto según tus necesidades
 const paginaPredeterminada = 1; // Página inicial
 
-router.get('/users/count', auth.authenticateToken, async (req, res) => {
+router.get('/users/count', async (req, res) => {
     try {
         const number = await orm.usuarios.count({})
         if (number != 0) {
@@ -81,7 +81,7 @@ router.get('/users/count', auth.authenticateToken, async (req, res) => {
 
 
 
-router.get('/users', auth.authenticateToken, async (req, res) => {
+router.get('/users', async (req, res) => {
     try {
         const { pagina = paginaPredeterminada, elementos = elementosPorPagin } = req.query;
         const paginaActual = parseInt(pagina);
@@ -112,7 +112,7 @@ router.get('/users', auth.authenticateToken, async (req, res) => {
     }
 });
 
-router.get('/users/:id', auth.authenticateToken, async (req, res) => {
+router.get('/users/:id', async (req, res) => {
     try {
 
         const foundUser = await orm.usuarios.findFirst({

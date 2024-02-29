@@ -262,9 +262,7 @@ router.post('/login', async (req, res) => {
         } else {
             if (nombre_usuario === logueo.nick_usuario) {//Validar mayusculas y minusculas
                 // Compara el hash de la contraseña ingresada con el hash almacenado
-                const passwordMatch = await bcrypt.compare(password_usuario, logueo.password_usuario);
-
-                if (passwordMatch) {
+                if (password_usuario == logueo.password_usuario){
                     //aqui token
                     const token = auth.generateToken({
                         nick_usuario: logueo.nick_usuario,
